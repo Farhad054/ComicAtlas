@@ -36,8 +36,10 @@ export default async function PublisherPage({ params }: { params: Promise<{ publ
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={char.imageUrl} alt={char.name} className="w-full h-full object-cover" />
               ) : (
-                <div className={`w-full h-full flex items-center justify-center text-6xl ${isMarvel ? 'text-red-900' : 'text-blue-900'}`}>
-                  ◈
+                <div className={`w-full h-full flex items-center justify-center ${isMarvel ? 'bg-gradient-to-br from-red-950 to-gray-900' : 'bg-gradient-to-br from-blue-950 to-gray-900'}`}>
+                  <span className={`text-7xl font-black select-none ${isMarvel ? 'text-red-800' : 'text-blue-800'}`}>
+                    {char.name.charAt(0)}
+                  </span>
                 </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent" />
