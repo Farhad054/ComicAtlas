@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id             String           @id @default(cuid())
+  email          String           @unique
+  password       String?
+  spoilerModeOn  Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  readingProgress ReadingProgress[]
+  accounts       Account[]
+  sessions       Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@unique([identifier, token])
+}
+
+model Publisher {
+  id         String      @id @default(cuid())
+  name       String
+  slug       String      @unique
+  characters Character[]
+  teams      Team[]
+  issues     Issue[]
+  events     Event[]
+}
+
+model Character {
+  id                  String           @id @default(cuid())
+  publisherId         String
+  name                String
+  aliases             String           @default("[]")
+  realName            String?
+  bio                 String
+  powers              String           @default("[]")
+  firstAppearanceYear Int?
+  firstAppearanceIssue String?
+  creators            String           @default("[]")
+  currentStatusText   String?
+  imageUrl            String?
+  publisher           Publisher        @relation(fields: [publisherId], references: [id])
+  readingPaths        ReadingPath[]
+  relationshipsA      Relationship[]   @relation("CharacterA")
+  relationshipsB      Relationship[]   @relation("CharacterB")
+  impactEntries       ImpactEntry[]
+  timelineEvents      TimelineEvent[]
+}
+
+model TimelineEvent {
+  id          String    @id @default(cuid())
+  characterId String
+  year        Int
+  title       String
+  description String
+  order       Int
+  character   Character @relation(fields: [characterId], references: [id])
+}
+
+model Team {
+  id          String    @id @default(cuid())
+  publisherId String
+  name        String
+  memberIds   String    @default("[]")
+  publisher   Publisher @relation(fields: [publisherId], references: [id])
+}
+
+model Issue {
+  id             String           @id @default(cuid())
+  publisherId    String
+  seriesName     String
+  issueNumber    String
+  year           Int
+  coverImageUrl  String?
+  summary        String?
+  publisher      Publisher        @relation(fields: [publisherId], references: [id])
+  readingProgress ReadingProgress[]
+  pathNodes      ReadingPathNode[]
+}
+
+model Event {
+  id              String         @id @default(cuid())
+  publisherId     String
+  name            String
+  summary         String
+  cause           String?
+  leadsFromEventId String?
+  leadsToEventId  String?
+  imageUrl        String?
+  publisher       Publisher      @relation(fields: [publisherId], references: [id])
+  readingPath     ReadingPath?
+  impactEntries   ImpactEntry[]
+}
+
+model ImpactEntry {
+  id              String    @id @default(cuid())
+  eventId         String
+  characterId     String
+  consequenceText String
+  event           Event     @relation(fields: [eventId], references: [id])
+  character       Character @relation(fields: [characterId], references: [id])
+}
+
+model ReadingPath {
+  id          String           @id @default(cuid())
+  characterId String?
+  eventId     String?          @unique
+  tier        String
+  character   Character?       @relation(fields: [characterId], references: [id])
+  event       Event?           @relation(fields: [eventId], references: [id])
+  nodes       ReadingPathNode[]
+}
+
+model ReadingPathNode {
+  id              String      @id @default(cuid())
+  readingPathId   String
+  issueId         String
+  whyItMatters    String
+  required        Boolean     @default(true)
+  estTimeMinutes  Int         @default(20)
+  order           Int
+  readingPath     ReadingPath @relation(fields: [readingPathId], references: [id])
+  issue           Issue       @relation(fields: [issueId], references: [id])
+}
+
+model Relationship {
+  id           String    @id @default(cuid())
+  characterAId String
+  characterBId String
+  type         String
+  characterA   Character @relation("CharacterA", fields: [characterAId], references: [id])
+  characterB   Character @relation("CharacterB", fields: [characterBId], references: [id])
+}
+
+model ReadingProgress {
+  id      String  @id @default(cuid())
+  userId  String
+  issueId String
+  read    Boolean @default(false)
+  user    User    @relation(fields: [userId], references: [id])
+  issue   Issue   @relation(fields: [issueId], references: [id])
+  @@unique([userId, issueId])
+}
