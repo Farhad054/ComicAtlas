@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/auth'
 import Link from 'next/link'
 import { SpoilerText } from '@/components/SpoilerText'
 import { ConnectionsGraph } from '@/components/ConnectionsGraph'
+import { AdaptationBridge } from '@/components/AdaptationBridge'
 
 async function getCharacter(publisherSlug: string, characterSlug: string) {
   const publisher = await prisma.publisher.findUnique({ where: { slug: publisherSlug } })
@@ -168,6 +169,9 @@ export default async function CharacterPage({
           />
         </div>
       )}
+
+      {/* Adaptation Bridge */}
+      <AdaptationBridge characterSlug={characterSlug} publisherSlug={publisherSlug} />
 
       {/* Start Reading CTA */}
       <div className="text-center">

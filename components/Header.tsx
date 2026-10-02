@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { SpoilerToggle } from './SpoilerToggle'
+import { SearchBar } from './SearchBar'
 
 export async function Header() {
   const session = await getServerSession(authOptions)
@@ -23,7 +24,9 @@ export async function Header() {
           Comic<span className="text-yellow-400">Atlas</span>
         </Link>
         <nav className="flex items-center gap-4">
-          <Link href="/events" className="text-sm text-gray-400 hover:text-white transition-colors">Events</Link>
+          <Link href="/events" className="text-sm text-gray-400 hover:text-white transition-colors hidden sm:block">Events</Link>
+          <Link href="/creators" className="text-sm text-gray-400 hover:text-white transition-colors hidden md:block">Creators</Link>
+          <SearchBar />
           <SpoilerToggle initialValue={spoilerMode} />
           {session ? (
             <div className="flex items-center gap-3">
