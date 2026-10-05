@@ -17,6 +17,10 @@ async function main() {
   await prisma.readingProgress.deleteMany()
   await prisma.relationship.deleteMany()
   await prisma.timelineEvent.deleteMany()
+  await prisma.eventTeam.deleteMany()
+  await prisma.teamRelationship.deleteMany()
+  await prisma.teamLineup.deleteMany()
+  await prisma.teamMembership.deleteMany()
   await prisma.event.deleteMany()
   await prisma.issue.deleteMany()
   await prisma.team.deleteMany()
@@ -764,7 +768,356 @@ async function main() {
   // Event chain links
   await prisma.event.update({ where: { id: flashpointEvent.id }, data: { leadsToEventId: blackestNight.id } })
 
-  console.log('Seed complete — 8 Marvel, 6 DC characters, 3 Marvel events, 2 DC events.')
+  // ─────────────────────────────────────────────
+  // NEW CHARACTERS — WORKSTREAM 2
+  // ─────────────────────────────────────────────
+
+  // DAREDEVIL
+  const daredevil = await prisma.character.create({
+    data: {
+      publisherId: marvel.id,
+      name: 'Daredevil',
+      realName: 'Matt Murdock',
+      aliases: JSON.stringify(["The Man Without Fear", "The Devil of Hell's Kitchen", "Kingpin of Hell's Kitchen"]),
+      bio: "Blinded by a radioactive canister as a child, Matt Murdock's remaining senses were amplified to superhuman levels. By day he's a lawyer fighting for justice in the courtroom. By night he's Daredevil — the one hero who patrols Hell's Kitchen because nobody else will. Frank Miller made him Marvel's darkest, most psychologically complex street-level hero.",
+      powers: JSON.stringify(['Radar sense', 'Enhanced senses', 'Peak acrobatics', 'Billy club', 'Legal expertise']),
+      firstAppearanceYear: 1964,
+      firstAppearanceIssue: 'Daredevil #1',
+      creators: JSON.stringify(['Stan Lee', 'Bill Everett']),
+      currentStatusText: "Protecting Hell's Kitchen as both lawyer and vigilante.",
+      imageUrl: 'https://i.annihil.us/u/prod/marvel/i/mg/d/03/58232dc09de4f.jpg',
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: daredevil.id, year: 1964, title: 'First Appearance', description: "Matt Murdock is blinded by a radioactive canister, and his remaining senses amplify to superhuman levels. Billy Club vigilante born.", order: 1 },
+    { characterId: daredevil.id, year: 1986, title: 'Born Again', description: "Kingpin discovers Daredevil's identity and systematically destroys Matt Murdock's life — his job, his home, his sanity.", order: 2 },
+    { characterId: daredevil.id, year: 1993, title: 'Falls of the Kingpin', description: "Murdock helps bring down Fisk, reclaiming his life and identity after years of destruction.", order: 3 },
+    { characterId: daredevil.id, year: 1998, title: "Kevin Smith's Guardian Devil", description: "Smith's run restores the book to prestige status, bringing in a new villain and testing Matt's faith.", order: 4 },
+    { characterId: daredevil.id, year: 2011, title: "Mark Waid's Run", description: "Swashbuckling Daredevil reimagined — new tone without losing depth. The best modern entry point.", order: 5 },
+  ]})
+
+  const ddIssue1_1964 = await prisma.issue.create({ data: { publisherId: marvel.id, seriesName: 'Daredevil', issueNumber: '1', year: 1964, coverImageUrl: null, summary: "The Man Without Fear's origin — blinded lawyer becomes vigilante." } })
+  const ddIssue227_1986 = await prisma.issue.create({ data: { publisherId: marvel.id, seriesName: 'Daredevil', issueNumber: '227', year: 1986, coverImageUrl: null, summary: "Born Again begins — Karen Page sells Matt's identity. Kingpin begins his destruction." } })
+  const ddIssue1_2011 = await prisma.issue.create({ data: { publisherId: marvel.id, seriesName: 'Daredevil', issueNumber: '1', year: 2011, coverImageUrl: null, summary: "Mark Waid's run — Daredevil reinvented without ignoring history. The best entry point." } })
+
+  const ddBeginner  = await prisma.readingPath.create({ data: { characterId: daredevil.id, tier: 'beginner' } })
+  const ddEssential = await prisma.readingPath.create({ data: { characterId: daredevil.id, tier: 'essential' } })
+  const ddComplete  = await prisma.readingPath.create({ data: { characterId: daredevil.id, tier: 'complete' } })
+  await prisma.readingPathNode.createMany({ data: [
+    { readingPathId: ddBeginner.id,  issueId: ddIssue1_2011.id,   whyItMatters: "Waid's run is the perfect entry — accessible, exciting, doesn't require history.", required: true,  estTimeMinutes: 20, order: 1 },
+    { readingPathId: ddEssential.id, issueId: ddIssue227_1986.id, whyItMatters: "Born Again: the greatest Daredevil story. Miller strips everything from Matt.", required: true,  estTimeMinutes: 20, order: 1 },
+    { readingPathId: ddEssential.id, issueId: ddIssue1_2011.id,   whyItMatters: "Then jump to Waid's lighter modern run.", required: true,  estTimeMinutes: 20, order: 2 },
+    { readingPathId: ddComplete.id,  issueId: ddIssue1_1964.id,   whyItMatters: "The original origin — start here for full context.", required: false, estTimeMinutes: 20, order: 1 },
+    { readingPathId: ddComplete.id,  issueId: ddIssue227_1986.id, whyItMatters: "Born Again: the greatest Daredevil story. Miller strips everything from Matt.", required: true,  estTimeMinutes: 20, order: 2 },
+    { readingPathId: ddComplete.id,  issueId: ddIssue1_2011.id,   whyItMatters: "Mark Waid's run — Daredevil reinvented without ignoring history.", required: true,  estTimeMinutes: 20, order: 3 },
+  ]})
+
+  // BLACK PANTHER
+  const blackPanther = await prisma.character.create({
+    data: {
+      publisherId: marvel.id,
+      name: 'Black Panther',
+      realName: "T'Challa",
+      aliases: JSON.stringify(['King of Wakanda', 'The Black Panther']),
+      bio: "T'Challa is king of Wakanda, the world's most technologically advanced nation — and the Black Panther, its ceremonial protector empowered by the heart-shaped herb. The first Black superhero in mainstream American comics, T'Challa is a king, a scientist, and a warrior who fights not just for survival but for sovereignty.",
+      powers: JSON.stringify(['Superhuman senses & strength (heart-shaped herb)', 'Vibranium suit', 'Genius intellect', 'Master tactician', 'Martial arts mastery']),
+      firstAppearanceYear: 1966,
+      firstAppearanceIssue: 'Fantastic Four #52',
+      creators: JSON.stringify(['Stan Lee', 'Jack Kirby']),
+      currentStatusText: 'Ruling Wakanda while protecting it from both external threats and internal dissent.',
+      imageUrl: null,
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: blackPanther.id, year: 1966, title: 'First Appearance', description: "T'Challa debuts in Fantastic Four #52 — joins the FF, tests them on his own terms.", order: 1 },
+    { characterId: blackPanther.id, year: 1988, title: 'Solo Series', description: "Peter B. Gillis writes Black Panther's first extended solo series.", order: 2 },
+    { characterId: blackPanther.id, year: 1998, title: "Priest's Landmark Run", description: "Christopher Priest's run begins — political, shrewd, unlike anything in Marvel.", order: 3 },
+    { characterId: blackPanther.id, year: 2005, title: 'Reclaims Wakandan Throne', description: "T'Challa regains the Wakandan throne after House of M fallout.", order: 4 },
+    { characterId: blackPanther.id, year: 2016, title: "Coates' Run", description: "Ta-Nehisi Coates' run — Wakanda in social turmoil, T'Challa questions his right to rule.", order: 5 },
+  ]})
+
+  const bpFF52 = await prisma.issue.create({ data: { publisherId: marvel.id, seriesName: 'Fantastic Four', issueNumber: '52', year: 1966, coverImageUrl: null, summary: "T'Challa's debut — he tests the Fantastic Four on his own terms." } })
+  const bpIssue1_1998 = await prisma.issue.create({ data: { publisherId: marvel.id, seriesName: 'Black Panther', issueNumber: '1', year: 1998, coverImageUrl: null, summary: "Christopher Priest's definitive run begins." } })
+  const bpIssue1_2016 = await prisma.issue.create({ data: { publisherId: marvel.id, seriesName: 'Black Panther', issueNumber: '1', year: 2016, coverImageUrl: null, summary: "Coates's run — Wakanda in revolution, T'Challa the reluctant king." } })
+
+  const bpBeginner  = await prisma.readingPath.create({ data: { characterId: blackPanther.id, tier: 'beginner' } })
+  const bpEssential = await prisma.readingPath.create({ data: { characterId: blackPanther.id, tier: 'essential' } })
+  const bpComplete  = await prisma.readingPath.create({ data: { characterId: blackPanther.id, tier: 'complete' } })
+  await prisma.readingPathNode.createMany({ data: [
+    { readingPathId: bpBeginner.id,  issueId: bpIssue1_1998.id, whyItMatters: "Priest's run is the essential starting point — political intrigue, sharp characterisation.", required: true, estTimeMinutes: 20, order: 1 },
+    { readingPathId: bpEssential.id, issueId: bpIssue1_1998.id, whyItMatters: "Priest's run is the essential starting point — political intrigue, sharp characterisation.", required: true, estTimeMinutes: 20, order: 1 },
+    { readingPathId: bpEssential.id, issueId: bpIssue1_2016.id, whyItMatters: "Coates continues what Priest established — Wakanda under pressure, T'Challa questioning sovereignty.", required: true, estTimeMinutes: 20, order: 2 },
+    { readingPathId: bpComplete.id,  issueId: bpFF52.id,        whyItMatters: "T'Challa's debut — the original appearance in Fantastic Four. Historical context.", required: false, estTimeMinutes: 20, order: 1 },
+    { readingPathId: bpComplete.id,  issueId: bpIssue1_1998.id, whyItMatters: "Priest's definitive run — where the character came into his own.", required: true, estTimeMinutes: 20, order: 2 },
+    { readingPathId: bpComplete.id,  issueId: bpIssue1_2016.id, whyItMatters: "Coates's run — the modern essential.", required: true, estTimeMinutes: 20, order: 3 },
+  ]})
+
+  // AQUAMAN
+  const aquaman = await prisma.character.create({
+    data: {
+      publisherId: dc.id,
+      name: 'Aquaman',
+      realName: 'Arthur Curry',
+      aliases: JSON.stringify(['King of Atlantis', 'Orin']),
+      bio: "Half-human, half-Atlantean, Arthur Curry has always been caught between two worlds — and fully accepted by neither. As Aquaman, he commands the seas, speaks to marine life, and rules an empire beneath the waves. Often mocked, rarely understood, consistently underestimated — which is exactly how Geoff Johns preferred it before he made Aquaman undeniable.",
+      powers: JSON.stringify(['Superhuman strength (water-enhanced)', 'Telepathy with sea life', 'Atlantean durability', 'Trident']),
+      firstAppearanceYear: 1941,
+      firstAppearanceIssue: 'More Fun Comics #73',
+      creators: JSON.stringify(['Paul Norris']),
+      currentStatusText: 'Ruling Atlantis while serving as a member of the Justice League.',
+      imageUrl: null,
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: aquaman.id, year: 1941, title: 'First Appearance', description: "Arthur Curry debuts in More Fun Comics #73 — the king of the seas arrives.", order: 1 },
+    { characterId: aquaman.id, year: 1993, title: 'Loses His Hand', description: "Arthur's hand is devoured by piranhas — replaced by a harpoon in a darker, grittier direction.", order: 2 },
+    { characterId: aquaman.id, year: 2011, title: 'New 52 Relaunch', description: "Geoff Johns rebuilds Aquaman from a punchline into a force — the definitive modern take.", order: 3 },
+    { characterId: aquaman.id, year: 2016, title: 'Rebirth', description: "Dan Abnett continues the modern Aquaman with the Rebirth line.", order: 4 },
+  ]})
+
+  const aquamanIssue1_2011 = await prisma.issue.create({ data: { publisherId: dc.id, seriesName: 'Aquaman', issueNumber: '1', year: 2011, coverImageUrl: null, summary: "Geoff Johns rebuilds Aquaman from a punchline into a force — essential." } })
+  const aquamanIssue17_2013 = await prisma.issue.create({ data: { publisherId: dc.id, seriesName: 'Aquaman', issueNumber: '17', year: 2013, coverImageUrl: null, summary: "Throne of Atlantis begins — war between surface and the deep." } })
+
+  const aquaBeginner  = await prisma.readingPath.create({ data: { characterId: aquaman.id, tier: 'beginner' } })
+  const aquaEssential = await prisma.readingPath.create({ data: { characterId: aquaman.id, tier: 'essential' } })
+  await prisma.readingPathNode.createMany({ data: [
+    { readingPathId: aquaBeginner.id,  issueId: aquamanIssue1_2011.id,  whyItMatters: "Johns rebuilds Aquaman — best entry point, no prior reading needed.", required: true, estTimeMinutes: 20, order: 1 },
+    { readingPathId: aquaEssential.id, issueId: aquamanIssue1_2011.id,  whyItMatters: "Start here. Johns makes Aquaman undeniable.", required: true, estTimeMinutes: 20, order: 1 },
+    { readingPathId: aquaEssential.id, issueId: aquamanIssue17_2013.id, whyItMatters: "Throne of Atlantis — war between surface and the deep. Aquaman's epic crossover.", required: true, estTimeMinutes: 20, order: 2 },
+  ]})
+
+  // GREEN ARROW
+  const greenArrow = await prisma.character.create({
+    data: {
+      publisherId: dc.id,
+      name: 'Green Arrow',
+      realName: 'Oliver Queen',
+      aliases: JSON.stringify(['Ollie', 'The Emerald Archer']),
+      bio: "A billionaire stranded on a desert island who remade himself into a survival expert and vigilante — then came home and decided Gotham already had a Batman, so he'd fight injustice with arrows instead. Oliver Queen is DC's loudest progressive voice: loud, self-righteous, often wrong, and genuinely trying. Denny O'Neil and Neal Adams made him matter.",
+      powers: JSON.stringify(['Master archer (trick arrows)', 'Expert martial artist', 'Acrobatics', 'Street-level savvy']),
+      firstAppearanceYear: 1941,
+      firstAppearanceIssue: 'More Fun Comics #73',
+      creators: JSON.stringify(['Morton Weisinger', 'George Papp']),
+      currentStatusText: 'Protecting Star City as the Emerald Archer.',
+      imageUrl: null,
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: greenArrow.id, year: 1941, title: 'First Appearance', description: "Oliver Queen debuts in More Fun Comics #73 as the Emerald Archer.", order: 1 },
+    { characterId: greenArrow.id, year: 1969, title: 'Political Voice', description: "Denny O'Neil and Neal Adams redefine Green Arrow as a progressive political voice alongside Green Lantern.", order: 2 },
+    { characterId: greenArrow.id, year: 1987, title: 'The Longbow Hunters', description: "Mike Grell's dark, adult, grounded take — trick arrows stripped, replaced with brutal reality.", order: 3 },
+    { characterId: greenArrow.id, year: 1995, title: 'Death', description: "Oliver Queen is blown up on an airplane — a dramatic end to a long era.", order: 4 },
+    { characterId: greenArrow.id, year: 2001, title: 'Resurrection', description: "Kevin Smith resurrects Oliver Queen — the return of the Emerald Archer.", order: 5 },
+    { characterId: greenArrow.id, year: 2007, title: 'Year One', description: "Andy Diggle and Jock tell the best version of the island origin story.", order: 6 },
+  ]})
+
+  const gaLongbow1 = await prisma.issue.create({ data: { publisherId: dc.id, seriesName: 'Green Arrow: The Longbow Hunters', issueNumber: '1', year: 1987, coverImageUrl: null, summary: "Mike Grell strips the trick arrows and makes Green Arrow a serious adult thriller." } })
+  const gaYearOne1 = await prisma.issue.create({ data: { publisherId: dc.id, seriesName: 'Green Arrow: Year One', issueNumber: '1', year: 2007, coverImageUrl: null, summary: "The best retelling of the island origin — Diggle and Jock." } })
+
+  const gaBeginner  = await prisma.readingPath.create({ data: { characterId: greenArrow.id, tier: 'beginner' } })
+  const gaEssential = await prisma.readingPath.create({ data: { characterId: greenArrow.id, tier: 'essential' } })
+  await prisma.readingPathNode.createMany({ data: [
+    { readingPathId: gaBeginner.id,  issueId: gaYearOne1.id,  whyItMatters: "The best retelling of the island origin — Diggle and Jock. Perfect entry point.", required: true, estTimeMinutes: 20, order: 1 },
+    { readingPathId: gaEssential.id, issueId: gaLongbow1.id,  whyItMatters: "Grell strips the trick arrows and makes Green Arrow a serious adult thriller.", required: true, estTimeMinutes: 20, order: 1 },
+    { readingPathId: gaEssential.id, issueId: gaYearOne1.id,  whyItMatters: "The best island origin — Diggle and Jock. Essential companion to Longbow Hunters.", required: true, estTimeMinutes: 20, order: 2 },
+  ]})
+
+  // ─────────────────────────────────────────────
+  // TEAMS — WORKSTREAM 1
+  // ─────────────────────────────────────────────
+
+  // Clear existing team data (teams were wiped at start with character.deleteMany)
+  await prisma.teamRelationship.deleteMany()
+  await prisma.eventTeam.deleteMany()
+  await prisma.teamLineup.deleteMany()
+  await prisma.teamMembership.deleteMany()
+  await prisma.team.deleteMany()
+
+  // Look up existing characters
+  const wolverineChar       = await prisma.character.findFirst({ where: { name: 'Wolverine' } })
+  const batmanChar          = await prisma.character.findFirst({ where: { name: 'Batman' } })
+  const supermanChar        = await prisma.character.findFirst({ where: { name: 'Superman' } })
+  const wonderWomanChar     = await prisma.character.findFirst({ where: { name: 'Wonder Woman' } })
+  const flashChar           = await prisma.character.findFirst({ where: { name: 'The Flash' } })
+  const greenLanternChar    = await prisma.character.findFirst({ where: { name: 'Green Lantern' } })
+
+  // ── X-MEN ──
+  const xMenTeam = await prisma.team.create({
+    data: {
+      publisherId: marvel.id,
+      slug: 'x-men',
+      name: 'X-Men',
+      bio: "Mutants born with extraordinary abilities, hated and feared by the world they protect. Founded by Professor Charles Xavier with a dream: peaceful coexistence between humans and mutants. The X-Men have never stopped fighting for that dream, even when the world gave them every reason to stop.",
+      baseOfOperations: "Xavier's School for Gifted Youngsters, Westchester, NY",
+      firstAppearanceIssue: 'X-Men #1',
+      firstAppearanceYear: 1963,
+      creators: JSON.stringify(['Stan Lee', 'Jack Kirby']),
+    },
+  })
+
+  // Memberships
+  await prisma.teamMembership.create({ data: { teamId: xMenTeam.id, characterId: wolverineChar!.id, displayName: 'Wolverine', role: 'Field Leader' } })
+  await prisma.teamMembership.createMany({ data: [
+    { teamId: xMenTeam.id, characterId: null, displayName: 'Cyclops',     role: 'Field Commander' },
+    { teamId: xMenTeam.id, characterId: null, displayName: 'Jean Grey',   role: 'Telepath' },
+    { teamId: xMenTeam.id, characterId: null, displayName: 'Storm',       role: 'Weather Manipulation' },
+    { teamId: xMenTeam.id, characterId: null, displayName: 'Nightcrawler',role: 'Teleportation' },
+    { teamId: xMenTeam.id, characterId: null, displayName: 'Colossus',    role: 'Steel Form' },
+    { teamId: xMenTeam.id, characterId: null, displayName: 'Rogue',       role: 'Power Absorption' },
+    { teamId: xMenTeam.id, characterId: null, displayName: 'Gambit',      role: 'Kinetic Energy' },
+    { teamId: xMenTeam.id, characterId: null, displayName: 'Beast',       role: 'Super-Intellect' },
+    { teamId: xMenTeam.id, characterId: null, displayName: 'Iceman',      role: 'Cryokinesis' },
+    { teamId: xMenTeam.id, characterId: null, displayName: 'Professor X', role: 'Founder' },
+  ]})
+
+  // Lineups
+  await prisma.teamLineup.createMany({ data: [
+    { teamId: xMenTeam.id, name: 'Original X-Men (1963)',       years: '1963–1975', memberDisplayNames: JSON.stringify(['Cyclops', 'Jean Grey', 'Beast', 'Iceman', 'Angel']) },
+    { teamId: xMenTeam.id, name: 'Giant-Size X-Men #1 (1975)',  years: '1975',      memberDisplayNames: JSON.stringify(['Wolverine', 'Storm', 'Nightcrawler', 'Colossus', 'Thunderbird', 'Banshee', 'Sunfire']) },
+    { teamId: xMenTeam.id, name: 'Whedon/Cassaday Era (2004)',  years: '2004–2008', memberDisplayNames: JSON.stringify(['Cyclops', 'Emma Frost', 'Wolverine', 'Kitty Pryde', 'Beast', 'Colossus']) },
+  ]})
+
+  // Issues for X-Men reading path
+  const xmen1_1963 = await prisma.issue.create({ data: { publisherId: marvel.id, seriesName: 'X-Men', issueNumber: '1', year: 1963, coverImageUrl: null, summary: "The origin. Xavier's dream stated plainly. Required context for every X-Men story that follows." } })
+  const gsXMen1_1975 = await prisma.issue.create({ data: { publisherId: marvel.id, seriesName: 'Giant-Size X-Men', issueNumber: '1', year: 1975, coverImageUrl: null, summary: "The new team. Wolverine joins. This issue invented modern X-Men." } })
+  // astonishingXMen1 already exists — reuse
+  // xMenGodLoves already exists — reuse
+
+  const xmenPath = await prisma.readingPath.create({ data: { teamId: xMenTeam.id, tier: 'essential' } })
+  await prisma.readingPathNode.createMany({ data: [
+    { readingPathId: xmenPath.id, issueId: xmen1_1963.id,       whyItMatters: "The origin. Xavier's dream stated plainly. Required context for every X-Men story that follows.", required: true,  estTimeMinutes: 20, order: 1 },
+    { readingPathId: xmenPath.id, issueId: gsXMen1_1975.id,     whyItMatters: "The new team. Wolverine joins. This issue invented modern X-Men.", required: true,  estTimeMinutes: 25, order: 2 },
+    { readingPathId: xmenPath.id, issueId: astonishingXMen1.id, whyItMatters: "Whedon's run is the best entry point for new readers — fresh start, no continuity needed.", required: true,  estTimeMinutes: 20, order: 3 },
+    { readingPathId: xmenPath.id, issueId: xMenGodLoves.id,     whyItMatters: "The definitive statement on what the X-Men are for.", required: false, estTimeMinutes: 45, order: 4 },
+  ]})
+
+  // ── FANTASTIC FOUR ──
+  const ffTeam = await prisma.team.create({
+    data: {
+      publisherId: marvel.id,
+      slug: 'fantastic-four',
+      name: 'Fantastic Four',
+      bio: "The First Family of Marvel. Four scientists bombarded by cosmic rays became something more — and became the template for everything that followed. Reed Richards, Sue Storm, Johnny Storm, and Ben Grimm aren't just heroes; they're explorers, parents, friends, and the blueprint for the entire Marvel Universe.",
+      baseOfOperations: 'Baxter Building, New York City',
+      firstAppearanceIssue: 'Fantastic Four #1',
+      firstAppearanceYear: 1961,
+      creators: JSON.stringify(['Stan Lee', 'Jack Kirby']),
+    },
+  })
+
+  await prisma.teamMembership.createMany({ data: [
+    { teamId: ffTeam.id, characterId: null, displayName: 'Mr. Fantastic / Reed Richards', role: 'Leader, genius-level intellect, elasticity' },
+    { teamId: ffTeam.id, characterId: null, displayName: 'Invisible Woman / Sue Storm',   role: 'Force fields, invisibility' },
+    { teamId: ffTeam.id, characterId: null, displayName: 'Human Torch / Johnny Storm',    role: 'Fire generation, flight' },
+    { teamId: ffTeam.id, characterId: null, displayName: 'The Thing / Ben Grimm',         role: 'Superhuman strength, rock-like skin' },
+    { teamId: ffTeam.id, characterId: null, displayName: 'She-Hulk',                      role: 'Temporary member' },
+    { teamId: ffTeam.id, characterId: null, displayName: 'Spider-Man',                    role: 'Temporary member' },
+  ]})
+
+  await prisma.teamLineup.createMany({ data: [
+    { teamId: ffTeam.id, name: 'Original Four (1961)',     years: '1961–present', memberDisplayNames: JSON.stringify(['Mr. Fantastic', 'Invisible Woman', 'Human Torch', 'The Thing']) },
+    { teamId: ffTeam.id, name: 'New Fantastic Four (1990)', years: '1990',        memberDisplayNames: JSON.stringify(['Spider-Man', 'Wolverine', 'Hulk', 'Ghost Rider']) },
+  ]})
+
+  const ff1_1961 = await prisma.issue.create({ data: { publisherId: marvel.id, seriesName: 'Fantastic Four', issueNumber: '1', year: 1961, coverImageUrl: null, summary: "The origin — four explorers, one cosmic ray, the birth of the Marvel Universe." } })
+  const ff48_1966 = await prisma.issue.create({ data: { publisherId: marvel.id, seriesName: 'Fantastic Four', issueNumber: '48', year: 1966, coverImageUrl: null, summary: "The Galactus Trilogy begins — the first true Marvel cosmic story." } })
+
+  const ffPath = await prisma.readingPath.create({ data: { teamId: ffTeam.id, tier: 'essential' } })
+  await prisma.readingPathNode.createMany({ data: [
+    { readingPathId: ffPath.id, issueId: ff1_1961.id,  whyItMatters: "The origin — four explorers, one cosmic ray, the birth of the Marvel Universe.", required: true, estTimeMinutes: 20, order: 1 },
+    { readingPathId: ffPath.id, issueId: ff48_1966.id, whyItMatters: "The Galactus Trilogy. The first true Marvel cosmic story — Reed Richards saves the Earth with a machine. One of the most important single issues ever published.", required: true, estTimeMinutes: 20, order: 2 },
+  ]})
+
+  // ── JUSTICE LEAGUE ──
+  const jlTeam = await prisma.team.create({
+    data: {
+      publisherId: dc.id,
+      slug: 'justice-league',
+      name: 'Justice League',
+      bio: "When one hero isn't enough. The Justice League is DC's greatest assembly — Superman's power, Batman's mind, Wonder Woman's courage, the Flash's speed — united to face threats no individual could stop. Founded in the Silver Age, the League has been Earth's last line of defense for over sixty years.",
+      baseOfOperations: 'Hall of Justice (later the Watchtower satellite)',
+      firstAppearanceIssue: 'The Brave and the Bold #28',
+      firstAppearanceYear: 1960,
+      creators: JSON.stringify(['Gardner Fox', 'Mike Sekowsky']),
+    },
+  })
+
+  await prisma.teamMembership.create({ data: { teamId: jlTeam.id, characterId: batmanChar!.id,      displayName: 'Batman',       role: 'Strategist' } })
+  await prisma.teamMembership.create({ data: { teamId: jlTeam.id, characterId: supermanChar!.id,    displayName: 'Superman',     role: 'Heavy hitter' } })
+  await prisma.teamMembership.create({ data: { teamId: jlTeam.id, characterId: wonderWomanChar!.id, displayName: 'Wonder Woman', role: 'Warrior' } })
+  await prisma.teamMembership.create({ data: { teamId: jlTeam.id, characterId: flashChar!.id,       displayName: 'The Flash',    role: 'Speed' } })
+  await prisma.teamMembership.create({ data: { teamId: jlTeam.id, characterId: greenLanternChar!.id,displayName: 'Green Lantern',role: 'Space cop' } })
+  await prisma.teamMembership.createMany({ data: [
+    { teamId: jlTeam.id, characterId: null, displayName: 'Aquaman',        role: 'Founding member, Atlantean strength' },
+    { teamId: jlTeam.id, characterId: null, displayName: 'Martian Manhunter', role: 'Shape-shifting telepath, founding member' },
+    { teamId: jlTeam.id, characterId: null, displayName: 'Hawkgirl',       role: 'Flight and Nth metal mace' },
+    { teamId: jlTeam.id, characterId: null, displayName: 'Cyborg',         role: 'Cybernetic enhancements' },
+    { teamId: jlTeam.id, characterId: null, displayName: 'Black Canary',   role: 'Canary Cry, martial arts' },
+  ]})
+
+  await prisma.teamLineup.createMany({ data: [
+    { teamId: jlTeam.id, name: 'Founding Seven (1960)',      years: '1960',      memberDisplayNames: JSON.stringify(['Superman', 'Batman', 'Wonder Woman', 'The Flash', 'Green Lantern', 'Aquaman', 'Martian Manhunter']) },
+    { teamId: jlTeam.id, name: 'Big Seven / Morrison Era (1997)', years: '1997–2000', memberDisplayNames: JSON.stringify(['Superman', 'Batman', 'Wonder Woman', 'The Flash', 'Green Lantern (Kyle Rayner)', 'Aquaman', 'Martian Manhunter']) },
+  ]})
+
+  // EventTeams — JL in Blackest Night and Flashpoint
+  await prisma.eventTeam.createMany({ data: [
+    { eventId: blackestNight.id,   teamId: jlTeam.id },
+    { eventId: flashpointEvent.id, teamId: jlTeam.id },
+  ]})
+
+  const jla1_1997  = await prisma.issue.create({ data: { publisherId: dc.id, seriesName: 'JLA', issueNumber: '1',  year: 1997, coverImageUrl: null, summary: "Grant Morrison's relaunch — the League restored to its 'big seven.'" } })
+  const jla43_2000 = await prisma.issue.create({ data: { publisherId: dc.id, seriesName: 'JLA', issueNumber: '43', year: 2000, coverImageUrl: null, summary: "Tower of Babel: Batman's contingency plans to defeat the JLA are stolen." } })
+
+  const jlPath = await prisma.readingPath.create({ data: { teamId: jlTeam.id, tier: 'essential' } })
+  await prisma.readingPathNode.createMany({ data: [
+    { readingPathId: jlPath.id, issueId: jla1_1997.id,  whyItMatters: "Grant Morrison restores the League to its 'big seven.' The definitive modern template.", required: true, estTimeMinutes: 20, order: 1 },
+    { readingPathId: jlPath.id, issueId: jla43_2000.id, whyItMatters: "Tower of Babel: Batman's contingency plans to defeat the JLA are stolen. Essential Batman-within-League story.", required: true, estTimeMinutes: 20, order: 2 },
+  ]})
+
+  // ── TEEN TITANS ──
+  const ttTeam = await prisma.team.create({
+    data: {
+      publisherId: dc.id,
+      slug: 'teen-titans',
+      name: 'Teen Titans',
+      bio: "The sidekicks grew up. The Teen Titans started as a club for Robin, Kid Flash, and Aqualad — and became something far greater. Under Marv Wolfman and George Pérez, they became DC's most emotionally complex team: young heroes dealing with identity, loss, and what it costs to carry on a legacy.",
+      baseOfOperations: 'Titans Tower, San Francisco',
+      firstAppearanceIssue: 'The Brave and the Bold #54',
+      firstAppearanceYear: 1964,
+      creators: JSON.stringify(['Bob Haney', 'Bruno Premiani']),
+    },
+  })
+
+  await prisma.teamMembership.createMany({ data: [
+    { teamId: ttTeam.id, characterId: null, displayName: 'Robin / Dick Grayson',  role: 'Founder, acrobatics, detective skills' },
+    { teamId: ttTeam.id, characterId: null, displayName: 'Wonder Girl / Donna Troy', role: 'Amazon strength and speed' },
+    { teamId: ttTeam.id, characterId: null, displayName: 'Kid Flash / Wally West', role: 'Speed Force, founder' },
+    { teamId: ttTeam.id, characterId: null, displayName: 'Aqualad / Garth',        role: 'Atlantean strength and water control' },
+    { teamId: ttTeam.id, characterId: null, displayName: 'Cyborg / Victor Stone',  role: 'Cybernetic enhancements' },
+    { teamId: ttTeam.id, characterId: null, displayName: "Starfire / Koriand'r",   role: 'Solar energy blasts, flight' },
+    { teamId: ttTeam.id, characterId: null, displayName: 'Raven',                  role: 'Empathy, soul-self projection, healing' },
+    { teamId: ttTeam.id, characterId: null, displayName: 'Beast Boy / Changeling', role: 'Animal transformation' },
+    { teamId: ttTeam.id, characterId: null, displayName: 'Terra',                  role: 'Geokinesis', leftNote: 'Revealed as a traitor working for Deathstroke. Died in the Judas Contract arc.' },
+  ]})
+
+  await prisma.teamLineup.createMany({ data: [
+    { teamId: ttTeam.id, name: 'Original Titans (1964)',   years: '1964–1980', memberDisplayNames: JSON.stringify(['Robin', 'Wonder Girl', 'Kid Flash', 'Aqualad', 'Speedy']) },
+    { teamId: ttTeam.id, name: 'New Teen Titans (1980)',   years: '1980–1988', memberDisplayNames: JSON.stringify(['Robin', 'Wonder Girl', 'Kid Flash', 'Raven', 'Starfire', 'Cyborg', 'Beast Boy']) },
+  ]})
+
+  const ntt1_1980 = await prisma.issue.create({ data: { publisherId: dc.id, seriesName: 'The New Teen Titans', issueNumber: '1', year: 1980, coverImageUrl: null, summary: "Wolfman and Pérez launch the definitive Titans. Raven, Starfire, Cyborg join." } })
+  const ntt2_1980 = await prisma.issue.create({ data: { publisherId: dc.id, seriesName: 'The New Teen Titans', issueNumber: '2', year: 1980, coverImageUrl: null, summary: "The team establishes itself. Read back-to-back with #1." } })
+  const tott44_1984 = await prisma.issue.create({ data: { publisherId: dc.id, seriesName: 'Tales of the Teen Titans', issueNumber: '44', year: 1984, coverImageUrl: null, summary: "The Judas Contract begins. Terra's betrayal." } })
+
+  const ttPath = await prisma.readingPath.create({ data: { teamId: ttTeam.id, tier: 'essential' } })
+  await prisma.readingPathNode.createMany({ data: [
+    { readingPathId: ttPath.id, issueId: ntt1_1980.id,  whyItMatters: "Wolfman and Pérez launch the definitive Titans. Raven, Starfire, Cyborg join. DC's answer to the X-Men.", required: true, estTimeMinutes: 20, order: 1 },
+    { readingPathId: ttPath.id, issueId: ntt2_1980.id,  whyItMatters: "The team establishes itself. Read back-to-back with #1.", required: true, estTimeMinutes: 20, order: 2 },
+    { readingPathId: ttPath.id, issueId: tott44_1984.id,whyItMatters: "The Judas Contract begins. Terra's betrayal. The most devastating arc in Titans history.", required: true, estTimeMinutes: 25, order: 3 },
+  ]})
+
+  console.log('Seed complete — 8 Marvel + 4 new characters, 6 DC + 2 new characters, 3 Marvel events, 2 DC events, 4 teams.')
 }
 
 main().catch((e) => { console.error(e); process.exit(1) }).finally(async () => { await prisma.$disconnect() })

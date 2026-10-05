@@ -78,6 +78,7 @@ model Character {
   relationshipsB      Relationship[]   @relation("CharacterB")
   impactEntries       ImpactEntry[]
   timelineEvents      TimelineEvent[]
+  teamMemberships     TeamMembership[]
 }
 
 model TimelineEvent {
@@ -91,11 +92,64 @@ model TimelineEvent {
 }
 
 model Team {
-  id          String    @id @default(cuid())
-  publisherId String
-  name        String
-  memberIds   String    @default("[]")
-  publisher   Publisher @relation(fields: [publisherId], references: [id])
+  id                   String             @id @default(cuid())
+  publisherId          String
+  name                 String
+  slug                 String             @unique
+  bio                  String
+  baseOfOperations     String?
+  currentStatusText    String?
+  imageUrl             String?
+  firstAppearanceIssue String?
+  firstAppearanceYear  Int?
+  creators             String             @default("[]")
+  publisher            Publisher          @relation(fields: [publisherId], references: [id])
+  memberships          TeamMembership[]
+  lineups              TeamLineup[]
+  readingPaths         ReadingPath[]
+  eventTeams           EventTeam[]
+  relationshipsA       TeamRelationship[] @relation("TeamRelA")
+  relationshipsB       TeamRelationship[] @relation("TeamRelB")
+}
+
+model TeamMembership {
+  id          String     @id @default(cuid())
+  teamId      String
+  characterId String?
+  displayName String
+  role        String?
+  joinedNote  String?
+  leftNote    String?
+  team        Team       @relation(fields: [teamId], references: [id])
+  character   Character? @relation(fields: [characterId], references: [id])
+}
+
+model TeamLineup {
+  id                 String @id @default(cuid())
+  teamId             String
+  name               String
+  years              String?
+  description        String?
+  memberDisplayNames String @default("[]")
+  team               Team   @relation(fields: [teamId], references: [id])
+}
+
+model EventTeam {
+  id      String @id @default(cuid())
+  eventId String
+  teamId  String
+  event   Event  @relation(fields: [eventId], references: [id])
+  team    Team   @relation(fields: [teamId], references: [id])
+  @@unique([eventId, teamId])
+}
+
+model TeamRelationship {
+  id      String @id @default(cuid())
+  teamAId String
+  teamBId String
+  type    String
+  teamA   Team   @relation("TeamRelA", fields: [teamAId], references: [id])
+  teamB   Team   @relation("TeamRelB", fields: [teamBId], references: [id])
 }
 
 model Issue {
@@ -123,6 +177,7 @@ model Event {
   publisher       Publisher      @relation(fields: [publisherId], references: [id])
   readingPath     ReadingPath?
   impactEntries   ImpactEntry[]
+  eventTeams      EventTeam[]
 }
 
 model ImpactEntry {
@@ -135,12 +190,14 @@ model ImpactEntry {
 }
 
 model ReadingPath {
-  id          String           @id @default(cuid())
+  id          String            @id @default(cuid())
   characterId String?
-  eventId     String?          @unique
+  eventId     String?           @unique
+  teamId      String?
   tier        String
-  character   Character?       @relation(fields: [characterId], references: [id])
-  event       Event?           @relation(fields: [eventId], references: [id])
+  character   Character?        @relation(fields: [characterId], references: [id])
+  event       Event?            @relation(fields: [eventId], references: [id])
+  team        Team?             @relation(fields: [teamId], references: [id])
   nodes       ReadingPathNode[]
 }
 
