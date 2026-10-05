@@ -1,13 +1,31 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { PrismaClient } = require('@prisma/client')
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { PrismaLibSql } = require('@prisma/adapter-libsql')
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const path = require('path')
 
-const absDbPath = path.join(process.cwd(), 'dev.db')
-const adapter = new PrismaLibSql({ url: 'file://' + absDbPath })
-const prisma = new PrismaClient({ adapter })
+function createPrismaClient() {
+  const url = process.env.DATABASE_URL ?? 'file:./dev.db'
+  if (url.startsWith('file:')) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { PrismaLibSql } = require('@prisma/adapter-libsql')
+    const filePath = url.replace('file:', '')
+    const absPath = filePath.startsWith('/') ? filePath : path.join(process.cwd(), filePath)
+    const adapter = new PrismaLibSql({ url: 'file://' + absPath })
+    return new PrismaClient({ adapter })
+  }
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { Pool, neonConfig } = require('@neondatabase/serverless')
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const ws = require('ws')
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { PrismaNeon } = require('@prisma/adapter-neon')
+  neonConfig.webSocketConstructor = ws
+  const pool = new Pool({ connectionString: url })
+  const adapter = new PrismaNeon(pool)
+  return new PrismaClient({ adapter })
+}
+
+const prisma = createPrismaClient()
 
 async function main() {
   // Clear existing data in dependency order
