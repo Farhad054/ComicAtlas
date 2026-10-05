@@ -25,6 +25,7 @@ export async function Header() {
         </Link>
         <nav className="flex items-center gap-4">
           <Link href="/events" className="text-sm text-gray-400 hover:text-white transition-colors hidden sm:block">Events</Link>
+          <Link href="/teams" className="text-sm text-gray-400 hover:text-white transition-colors hidden sm:block">Teams</Link>
           <Link href="/creators" className="text-sm text-gray-400 hover:text-white transition-colors hidden md:block">Creators</Link>
           <SearchBar />
           <SpoilerToggle initialValue={spoilerMode} />

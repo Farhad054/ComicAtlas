@@ -5,15 +5,18 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const q = (searchParams.get('q') ?? '').trim()
 
-  if (q.length < 2) return NextResponse.json({ characters: [], events: [] })
+  if (q.length < 2) return NextResponse.json({ characters: [], events: [], teams: [] })
 
   const lower = q.toLowerCase()
 
-  const [characters, events] = await Promise.all([
+  const [characters, events, teams] = await Promise.all([
     prisma.character.findMany({
       include: { publisher: { select: { slug: true } } },
     }),
     prisma.event.findMany({
+      include: { publisher: { select: { slug: true } } },
+    }),
+    prisma.team.findMany({
       include: { publisher: { select: { slug: true } } },
     }),
   ])
@@ -42,5 +45,14 @@ export async function GET(req: Request) {
     publisherSlug: e.publisher.slug,
   }))
 
-  return NextResponse.json({ characters: matchedChars, events: matchedEvents })
+  const matchedTeams = teams.filter((t) =>
+    t.name.toLowerCase().includes(lower)
+  ).map((t) => ({
+    id: t.id,
+    name: t.name,
+    slug: t.slug,
+    publisherSlug: t.publisher.slug,
+  }))
+
+  return NextResponse.json({ characters: matchedChars, events: matchedEvents, teams: matchedTeams })
 }

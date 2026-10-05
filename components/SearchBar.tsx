@@ -7,6 +7,7 @@ import Link from 'next/link'
 interface SearchResult {
   characters: { id: string; name: string; realName: string | null; imageUrl: string | null; publisherSlug: string; slug: string }[]
   events: { id: string; name: string; publisherSlug: string }[]
+  teams: { id: string; name: string; slug: string; publisherSlug: string }[]
 }
 
 export function SearchBar() {
@@ -40,8 +41,8 @@ export function SearchBar() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  const hasResults = results && (results.characters.length > 0 || results.events.length > 0)
-  const isEmpty = results && results.characters.length === 0 && results.events.length === 0
+  const hasResults = results && (results.characters.length > 0 || results.events.length > 0 || (results.teams ?? []).length > 0)
+  const isEmpty = results && results.characters.length === 0 && results.events.length === 0 && (results.teams ?? []).length === 0
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -118,6 +119,27 @@ export function SearchBar() {
                       <div className="text-sm font-semibold text-white">{e.name}</div>
                       <div className={`ml-auto text-xs font-bold uppercase ${e.publisherSlug === 'marvel' ? 'text-red-500' : 'text-blue-400'}`}>
                         {e.publisherSlug}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+              {results && (results.teams ?? []).length > 0 && (
+                <div className="border-t border-gray-800">
+                  <div className="px-4 pt-3 pb-1 text-xs text-gray-500 uppercase tracking-wider font-semibold">Teams</div>
+                  {(results.teams ?? []).map((t) => (
+                    <Link
+                      key={t.id}
+                      href={`/teams/${t.slug}`}
+                      onClick={() => { setOpen(false); setQuery('') }}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-800 transition-colors"
+                    >
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-black text-sm ${t.publisherSlug === 'marvel' ? 'bg-red-950 text-red-500' : 'bg-blue-950 text-blue-500'}`}>
+                        {t.name.charAt(0)}
+                      </div>
+                      <div className="text-sm font-semibold text-white">{t.name}</div>
+                      <div className={`ml-auto text-xs font-bold uppercase ${t.publisherSlug === 'marvel' ? 'text-red-500' : 'text-blue-400'}`}>
+                        {t.publisherSlug}
                       </div>
                     </Link>
                   ))}
