@@ -1,5 +1,7 @@
 # ComicAtlas
 
+[![CI](https://github.com/Farhad054/ComicAtlas/actions/workflows/ci.yml/badge.svg)](https://github.com/Farhad054/ComicAtlas/actions/workflows/ci.yml)
+
 A beginner-guidance discovery platform for Marvel and DC comics. Take someone who has never read a comic and get them to **"I know what to read and why"** in a few clicks.
 
 ---
