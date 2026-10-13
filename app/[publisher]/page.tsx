@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
+import { ComicImage } from '@/components/ComicImage'
 
 export default async function PublisherPage({ params }: { params: Promise<{ publisher: string }> }) {
   const { publisher: publisherSlug } = await params
@@ -32,16 +33,13 @@ export default async function PublisherPage({ params }: { params: Promise<{ publ
             }`}
           >
             <div className="aspect-[3/4] bg-gray-800 relative">
-              {char.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={char.imageUrl} alt={char.name} className="w-full h-full object-cover" />
-              ) : (
-                <div className={`w-full h-full flex items-center justify-center ${isMarvel ? 'bg-gradient-to-br from-red-950 to-gray-900' : 'bg-gradient-to-br from-blue-950 to-gray-900'}`}>
-                  <span className={`text-7xl font-black select-none ${isMarvel ? 'text-red-800' : 'text-blue-800'}`}>
-                    {char.name.charAt(0)}
-                  </span>
-                </div>
-              )}
+              <ComicImage
+                src={char.imageUrl}
+                overrideSrc={char.imageOverrideUrl}
+                alt={char.name}
+                publisherSlug={publisherSlug}
+                letterClassName="text-7xl"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent" />
             </div>
             <div className="p-4">

@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
+import { ComicImage } from '@/components/ComicImage'
 
 export default async function SearchPage({
   searchParams,
@@ -71,11 +72,13 @@ export default async function SearchPage({
                       c.publisherSlug === 'marvel' ? 'border-gray-800 hover:border-red-600' : 'border-gray-800 hover:border-blue-600'
                     }`}
                   >
-                    <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-gray-800 flex items-center justify-center">
-                      {c.imageUrl
-                        ? <img src={c.imageUrl} alt={c.name} className="w-full h-full object-cover" />
-                        : <span className={`text-lg font-black ${c.publisherSlug === 'marvel' ? 'text-red-700' : 'text-blue-700'}`}>{c.name.charAt(0)}</span>
-                      }
+                    <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-gray-800">
+                      <ComicImage
+                        src={c.imageUrl}
+                        alt={c.name}
+                        publisherSlug={c.publisherSlug}
+                        letterClassName="text-lg"
+                      />
                     </div>
                     <div className="flex-1">
                       <div className="font-black text-base">{c.name}</div>

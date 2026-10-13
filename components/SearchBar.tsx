@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { ComicImage } from './ComicImage'
 
 interface SearchResult {
   characters: { id: string; name: string; realName: string | null; imageUrl: string | null; publisherSlug: string; slug: string }[]
@@ -88,11 +89,13 @@ export function SearchBar() {
                       onClick={() => { setOpen(false); setQuery('') }}
                       className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-800 transition-colors"
                     >
-                      <div className="w-8 h-8 rounded-full bg-gray-800 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                        {c.imageUrl
-                          ? <img src={c.imageUrl} alt={c.name} className="w-full h-full object-cover" />
-                          : <span className={`text-sm font-black ${c.publisherSlug === 'marvel' ? 'text-red-600' : 'text-blue-600'}`}>{c.name.charAt(0)}</span>
-                        }
+                      <div className="w-8 h-8 rounded-full bg-gray-800 overflow-hidden flex-shrink-0">
+                        <ComicImage
+                          src={c.imageUrl}
+                          alt={c.name}
+                          publisherSlug={c.publisherSlug}
+                          letterClassName="text-sm"
+                        />
                       </div>
                       <div>
                         <div className="text-sm font-semibold text-white">{c.name}</div>

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { SpoilerText } from '@/components/SpoilerText'
 import { ConnectionsGraph } from '@/components/ConnectionsGraph'
 import { AdaptationBridge } from '@/components/AdaptationBridge'
+import { ComicImage } from '@/components/ComicImage'
 
 async function getCharacter(publisherSlug: string, characterSlug: string) {
   const publisher = await prisma.publisher.findUnique({ where: { slug: publisherSlug } })
@@ -67,12 +68,15 @@ export default async function CharacterPage({
       {/* Hero Header */}
       <div className={`rounded-2xl overflow-hidden mb-8 ${isMarvel ? 'bg-gradient-to-br from-red-950 via-gray-950 to-gray-950 border border-red-900' : 'bg-gradient-to-br from-blue-950 via-gray-950 to-gray-950 border border-blue-900'}`}>
         <div className="flex flex-col md:flex-row gap-6 p-8">
-          {character.imageUrl && (
-            <div className="w-40 h-52 rounded-xl overflow-hidden flex-shrink-0 border border-gray-700">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={character.imageUrl} alt={character.name} className="w-full h-full object-cover" />
-            </div>
-          )}
+          <div className="w-40 h-52 rounded-xl overflow-hidden flex-shrink-0 border border-gray-700">
+            <ComicImage
+              src={character.imageUrl}
+              overrideSrc={character.imageOverrideUrl}
+              alt={character.name}
+              publisherSlug={publisher.slug}
+              letterClassName="text-6xl"
+            />
+          </div>
           <div className="flex-1">
             <div className={`text-sm font-semibold mb-2 ${isMarvel ? 'text-red-400' : 'text-blue-400'}`}>
               {publisher.name}

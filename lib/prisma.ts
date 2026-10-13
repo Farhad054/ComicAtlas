@@ -1,8 +1,11 @@
 import { PrismaClient } from '@prisma/client'
 import path from 'path'
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
-
+/**
+ * Lazily create the Prisma client so module import during Next.js build
+ * static analysis doesn't trigger adapter-provider compatibility checks.
+ * The client is instantiated on the first actual DB call, not at import time.
+ */
 function createPrismaClient(): PrismaClient {
   const url = process.env.DATABASE_URL ?? 'file:./dev.db'
 
@@ -29,6 +32,25 @@ function createPrismaClient(): PrismaClient {
   return new PrismaClient({ adapter } as any)
 }
 
-export const prisma = globalForPrisma.prisma || createPrismaClient()
+// Singleton pattern — reuse across hot-reloads in dev
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined }
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+function getOrCreateClient(): PrismaClient {
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = createPrismaClient()
+  }
+  return globalForPrisma.prisma
+}
+
+/**
+ * Proxy that defers PrismaClient construction until the first property access.
+ * This means importing lib/prisma.ts never instantiates the client — only
+ * calling prisma.user.findMany() (or any other method) does.
+ */
+export const prisma: PrismaClient = new Proxy({} as PrismaClient, {
+  get(_target, prop: string | symbol) {
+    const client = getOrCreateClient()
+    const value = (client as any)[prop]
+    return typeof value === 'function' ? value.bind(client) : value
+  },
+})

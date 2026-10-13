@@ -803,7 +803,7 @@ async function main() {
       firstAppearanceIssue: 'Daredevil #1',
       creators: JSON.stringify(['Stan Lee', 'Bill Everett']),
       currentStatusText: "Protecting Hell's Kitchen as both lawyer and vigilante.",
-      imageUrl: 'https://i.annihil.us/u/prod/marvel/i/mg/d/03/58232dc09de4f.jpg',
+      imageUrl: null, // annihil.us URL returned 404; will be updated via Comic Vine import
     },
   })
   await prisma.timelineEvent.createMany({ data: [

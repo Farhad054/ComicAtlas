@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { ComicImage } from '@/components/ComicImage'
 
 function toSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
@@ -100,12 +101,15 @@ export default async function CreatorPage({ params }: { params: Promise<{ slug: 
                 return (
                   <div key={char.id} className={`bg-gray-900 border rounded-xl overflow-hidden ${section.color === 'red' ? 'border-gray-800 hover:border-red-800' : 'border-gray-800 hover:border-blue-800'} transition-colors`}>
                     <div className="flex items-start gap-4 p-5">
-                      {char.imageUrl && (
-                        <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 border border-gray-800">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={char.imageUrl} alt={char.name} className="w-full h-full object-cover" />
-                        </div>
-                      )}
+                      <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 border border-gray-800">
+                        <ComicImage
+                          src={char.imageUrl}
+                          overrideSrc={char.imageOverrideUrl}
+                          alt={char.name}
+                          publisherSlug={char.publisher.slug}
+                          letterClassName="text-2xl"
+                        />
+                      </div>
                       <div className="flex-1">
                         <Link
                           href={`/${char.publisher.slug}/${charSlug}`}
