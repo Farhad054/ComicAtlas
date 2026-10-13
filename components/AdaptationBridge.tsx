@@ -85,7 +85,7 @@ export function AdaptationBridge({ characterSlug, publisherSlug }: AdaptationBri
   return (
     <div className="mb-8">
       <h2 className="text-xl font-black mb-1">Came from a film or show?</h2>
-      <p className="text-gray-400 text-sm mb-4">We'll map what you've seen to where you should start reading.</p>
+      <p className="text-gray-400 text-sm mb-4">{"We'll map what you've seen to where you should start reading."}</p>
 
       <div className="grid gap-3 sm:grid-cols-3">
         {adaptations.map((ad) => (
@@ -107,7 +107,7 @@ export function AdaptationBridge({ characterSlug, publisherSlug }: AdaptationBri
               </span>
             </div>
 
-            <p className="text-gray-400 text-xs italic flex-1">"{ad.hook}"</p>
+            <p className="text-gray-400 text-xs italic flex-1">&ldquo;{ad.hook}&rdquo;</p>
 
             <Link
               href={`/${publisherSlug}/${characterSlug}/read`}

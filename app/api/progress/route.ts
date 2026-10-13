@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { issueId, read } = await req.json()
-  const userId = (session.user as any).id
+  const userId = session.user.id
 
   const progress = await prisma.readingProgress.upsert({
     where: { userId_issueId: { userId, issueId } },
@@ -19,11 +19,11 @@ export async function POST(req: Request) {
   return NextResponse.json(progress)
 }
 
-export async function GET(req: Request) {
+export async function GET() {
   const session = await getServerSession(authOptions)
   if (!session?.user) return NextResponse.json([])
 
-  const userId = (session.user as any).id
+  const userId = session.user.id
   const progress = await prisma.readingProgress.findMany({
     where: { userId, read: true },
     select: { issueId: true },

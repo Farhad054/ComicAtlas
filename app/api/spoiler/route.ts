@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { spoilerModeOn } = await req.json()
-  const userId = (session.user as any).id
+  const userId = session.user.id
 
   await prisma.user.update({ where: { id: userId }, data: { spoilerModeOn } })
   return NextResponse.json({ spoilerModeOn })

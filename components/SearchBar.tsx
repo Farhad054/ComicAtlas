@@ -20,15 +20,20 @@ export function SearchBar() {
   const router = useRouter()
 
   useEffect(() => {
-    if (query.length < 2) { setResults(null); setOpen(false); return }
+    const delay = query.length < 2 ? 0 : 200
     const t = setTimeout(async () => {
+      if (query.length < 2) {
+        setResults(null)
+        setOpen(false)
+        return
+      }
       setLoading(true)
       const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
       const data = await res.json()
       setResults(data)
       setOpen(true)
       setLoading(false)
-    }, 200)
+    }, delay)
     return () => clearTimeout(t)
   }, [query])
 
@@ -75,7 +80,7 @@ export function SearchBar() {
             <div className="px-4 py-3 text-gray-500 text-sm">Searching…</div>
           )}
           {!loading && isEmpty && (
-            <div className="px-4 py-3 text-gray-500 text-sm">No results for "{query}"</div>
+            <div className="px-4 py-3 text-gray-500 text-sm">No results for &ldquo;{query}&rdquo;</div>
           )}
           {!loading && hasResults && (
             <>
@@ -153,7 +158,7 @@ export function SearchBar() {
                   onClick={() => { setOpen(false); router.push(`/search?q=${encodeURIComponent(query)}`) }}
                   className="text-xs text-gray-500 hover:text-white transition-colors"
                 >
-                  See all results for "{query}" →
+                  See all results for &ldquo;{query}&rdquo; →
                 </button>
               </div>
             </>

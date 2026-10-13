@@ -29,7 +29,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
   let spoilerMode = false
   if (session?.user) {
     const user = await prisma.user.findUnique({
-      where: { id: (session.user as any).id },
+      where: { id: session.user.id },
       select: { spoilerModeOn: true },
     })
     spoilerMode = user?.spoilerModeOn ?? false

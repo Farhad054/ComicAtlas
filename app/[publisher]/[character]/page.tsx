@@ -43,7 +43,7 @@ export default async function CharacterPage({
   let spoilerMode = false
   if (session?.user) {
     const user = await prisma.user.findUnique({
-      where: { id: (session.user as any).id },
+      where: { id: session.user.id },
       select: { spoilerModeOn: true },
     })
     spoilerMode = user?.spoilerModeOn ?? false

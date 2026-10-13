@@ -16,7 +16,7 @@ function createPrismaClient(): PrismaClient {
     const filePath = url.replace('file:', '')
     const absPath = filePath.startsWith('/') ? filePath : path.join(process.cwd(), filePath)
     const adapter = new PrismaLibSql({ url: 'file://' + absPath })
-    return new PrismaClient({ adapter } as any)
+    return new PrismaClient({ adapter })
   }
 
   // Postgres via Neon serverless adapter
@@ -29,7 +29,7 @@ function createPrismaClient(): PrismaClient {
   neonConfig.webSocketConstructor = ws
   const pool = new Pool({ connectionString: url })
   const adapter = new PrismaNeon(pool)
-  return new PrismaClient({ adapter } as any)
+  return new PrismaClient({ adapter })
 }
 
 // Singleton pattern — reuse across hot-reloads in dev
@@ -50,7 +50,7 @@ function getOrCreateClient(): PrismaClient {
 export const prisma: PrismaClient = new Proxy({} as PrismaClient, {
   get(_target, prop: string | symbol) {
     const client = getOrCreateClient()
-    const value = (client as any)[prop]
+    const value = (client as unknown as Record<string | symbol, unknown>)[prop]
     return typeof value === 'function' ? value.bind(client) : value
   },
 })

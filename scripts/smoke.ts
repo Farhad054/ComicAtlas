@@ -21,7 +21,7 @@ const BASE_URL = process.env.SMOKE_BASE_URL ?? 'http://localhost:3000'
 // ── DB client ──────────────────────────────────────────────────────────────
 const absDbPath = path.join(process.cwd(), 'dev.db')
 const adapter = new PrismaLibSql({ url: 'file://' + absDbPath })
-const prisma = new PrismaClient({ adapter } as any)
+const prisma = new PrismaClient({ adapter })
 
 // ── HTTP helpers ────────────────────────────────────────────────────────────
 function fetch(url: string): Promise<{ status: number; body: string }> {
@@ -101,7 +101,7 @@ async function checkRoute(route: string): Promise<Result> {
       )
       brokenImages.push(...(checks.filter(Boolean) as string[]))
     }
-  } catch (e) {
+  } catch {
     pageStatus = -1
   }
 
