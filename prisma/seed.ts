@@ -1135,7 +1135,455 @@ async function main() {
     { readingPathId: ttPath.id, issueId: tott44_1984.id,whyItMatters: "The Judas Contract begins. Terra's betrayal. The most devastating arc in Titans history.", required: true, estTimeMinutes: 25, order: 3 },
   ]})
 
-  console.log('Seed complete — 8 Marvel + 4 new characters, 6 DC + 2 new characters, 3 Marvel events, 2 DC events, 4 teams.')
+  // ─────────────────────────────────────────────
+  // ADDITIONAL MARVEL CHARACTERS (10 more → 20 total)
+  // images populated by: npm run import:images
+  // ─────────────────────────────────────────────
+
+  const cyclops = await prisma.character.create({
+    data: {
+      publisherId: marvel.id,
+      name: 'Cyclops',
+      realName: 'Scott Summers',
+      aliases: JSON.stringify(['Slim', 'Onslaught (briefly)', 'The Mutant Messiah']),
+      bio: "The first X-Man, Cyclops has carried the weight of the mutant cause since he was a teenager. His optic blasts are always one open eye away from catastrophe — a physical metaphor for a man who can never fully let his guard down. Scott Summers is simultaneously the X-Men's most dependable soldier and its most divisive idealist.",
+      powers: JSON.stringify(['Optic blasts (concussive force beams)', 'Master tactician', 'Expert martial artist']),
+      firstAppearanceYear: 1963, firstAppearanceIssue: 'X-Men #1',
+      creators: JSON.stringify(['Stan Lee', 'Jack Kirby']),
+      currentStatusText: 'Leading the mutant nation of Krakoa.',
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: cyclops.id, year: 1963, title: 'First X-Man', description: "Scott Summers becomes the first student at Xavier's School for Gifted Youngsters.", order: 1 },
+    { characterId: cyclops.id, year: 1975, title: 'New Team', description: "Cyclops leads the new X-Men — Storm, Wolverine, Colossus, Nightcrawler — on their first mission to rescue the originals.", order: 2 },
+    { characterId: cyclops.id, year: 2012, title: 'Phoenix Force', description: "Scott becomes the Phoenix, kills Professor Xavier, and sparks the Avengers vs. X-Men war — splitting the mutant world.", order: 3 },
+    { characterId: cyclops.id, year: 2019, title: 'Krakoa', description: "Resurrected through the Five, Cyclops becomes one of the key figures in mutantkind's new nation on the island Krakoa.", order: 4 },
+  ]})
+
+  const storm = await prisma.character.create({
+    data: {
+      publisherId: marvel.id,
+      name: 'Storm',
+      realName: 'Ororo Munroe',
+      aliases: JSON.stringify(['Goddess', 'White Queen', 'Queen of Wakanda']),
+      bio: "A Kenyan-American woman worshipped as a goddess for her ability to control weather, Storm is among the most powerful mutants alive. She has led the X-Men, ruled Wakanda as queen, and carried herself with a regal dignity that makes her the moral heart of every team she joins.",
+      powers: JSON.stringify(['Weather manipulation', 'Flight', 'Lightning control', 'Atmospheric pressure mastery']),
+      firstAppearanceYear: 1975, firstAppearanceIssue: 'Giant-Size X-Men #1',
+      creators: JSON.stringify(['Len Wein', 'Dave Cockrum']),
+      currentStatusText: 'Serving as a senior X-Man and mutant ambassador.',
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: storm.id, year: 1975, title: 'Joins the X-Men', description: "Ororo Munroe is recruited from Kenya, where she had been worshipped as a goddess for her weather powers.", order: 1 },
+    { characterId: storm.id, year: 1986, title: 'Leads Without Powers', description: "Stripped of her powers by Forge's neutralizer gun, Storm proves she can lead the X-Men on skill alone.", order: 2 },
+    { characterId: storm.id, year: 2006, title: 'Marries Black Panther', description: "Ororo and T'Challa marry in a ceremony witnessed by nearly every superhero on Earth.", order: 3 },
+    { characterId: storm.id, year: 2019, title: 'Krakoa', description: "Storm sits on the Quiet Council, the ruling body of the new mutant nation, representing old wisdom in a new world.", order: 4 },
+  ]})
+
+  const jeanGrey = await prisma.character.create({
+    data: {
+      publisherId: marvel.id,
+      name: 'Jean Grey',
+      realName: 'Jean Grey-Summers',
+      aliases: JSON.stringify(['Marvel Girl', 'Phoenix', 'Dark Phoenix']),
+      bio: "One of the most powerful telepaths and telekinetics in the Marvel universe, Jean Grey is inseparable from the Phoenix Force — the cosmic entity that amplifies and ultimately consumes her. Her death in the Dark Phoenix Saga redefined what a superhero story could be, and her resurrections have never fully resolved the question of whether the Phoenix and Jean are the same person.",
+      powers: JSON.stringify(['Omega-level telepath', 'Telekinesis', 'Phoenix Force host', 'Astral projection']),
+      firstAppearanceYear: 1963, firstAppearanceIssue: 'X-Men #1',
+      creators: JSON.stringify(['Stan Lee', 'Jack Kirby']),
+      currentStatusText: 'The Eternal Jean Grey — one with the Phoenix and beyond death.',
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: jeanGrey.id, year: 1963, title: 'Original X-Man', description: "Jean Grey is among the five original X-Men, using her telekinesis under the name Marvel Girl.", order: 1 },
+    { characterId: jeanGrey.id, year: 1976, title: 'Becomes Phoenix', description: "Jean sacrifices herself to save her teammates from solar radiation, transforming into the Phoenix Force.", order: 2 },
+    { characterId: jeanGrey.id, year: 1980, title: 'Dark Phoenix Saga', description: "The Phoenix Force corrupts Jean, who becomes Dark Phoenix and destroys a star, killing billions. She chooses death over losing control.", order: 3 },
+    { characterId: jeanGrey.id, year: 2017, title: 'The Phoenix Reborn', description: "In Jean Grey's solo series, a teenage Jean from the past fights to escape the destiny that killed her future self.", order: 4 },
+  ]})
+
+  const magneto = await prisma.character.create({
+    data: {
+      publisherId: marvel.id,
+      name: 'Magneto',
+      realName: 'Erik Magnus Lensherr',
+      aliases: JSON.stringify(['The Master of Magnetism', 'Magnus', 'Michael Xavier']),
+      bio: "A Holocaust survivor who watched humanity's capacity for genocide at its worst, Erik Lensherr concluded that mutants must fight — not coexist — to survive. As Magneto, he is simultaneously the X-Men's greatest villain and most compelling mirror: a man whose trauma produced a worldview that is horrifying, understandable, and occasionally right.",
+      powers: JSON.stringify(['Magnetic force generation and control', 'Electromagnetic spectrum mastery', 'Force-field creation', 'Metal manipulation']),
+      firstAppearanceYear: 1963, firstAppearanceIssue: 'X-Men #1',
+      creators: JSON.stringify(['Stan Lee', 'Jack Kirby']),
+      currentStatusText: 'A complicated ally of mutantkind on Krakoa.',
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: magneto.id, year: 1939, title: 'Auschwitz', description: "As a Jewish child, Erik is separated from his family at the gates of Auschwitz — an experience that will define his entire ideology.", order: 1 },
+    { characterId: magneto.id, year: 1963, title: 'Brotherhood of Evil Mutants', description: "Magneto forms the Brotherhood to oppose Xavier's dream of integration, declaring that mutants must seize their place in the world by force.", order: 2 },
+    { characterId: magneto.id, year: 1991, title: "Ripped Out Wolverine's Adamantium", description: "In a brutal battle, Magneto extracts the adamantium from Wolverine's skeleton — one of the most shocking moments in X-Men history.", order: 3 },
+    { characterId: magneto.id, year: 2019, title: 'Quiet Council', description: "Magneto sits on the Quiet Council of Krakoa, having lived to see the mutant nation his ideology always demanded.", order: 4 },
+  ]})
+
+  const hawkeye = await prisma.character.create({
+    data: {
+      publisherId: marvel.id,
+      name: 'Hawkeye',
+      realName: 'Clint Barton',
+      aliases: JSON.stringify(['Goliath', "The World's Greatest Marksman", 'Ronin']),
+      bio: "The only Avenger without superpowers by birth, Clint Barton is Marvel's best argument for human potential. A former circus performer who became an expert archer after training under the Swordsman, Hawkeye is loud, impulsive, frequently wrong, and reliably heroic when it counts. Matt Fraction's run made him the quintessential everyman hero.",
+      powers: JSON.stringify(['Master archer', 'Expert acrobat and hand-to-hand combatant', 'Trick arrows (explosive, EMP, grappling)', 'Tactical improvisation']),
+      firstAppearanceYear: 1964, firstAppearanceIssue: 'Tales of Suspense #57',
+      creators: JSON.stringify(['Stan Lee', 'Don Heck']),
+      currentStatusText: 'Avenger, mentor, and reluctant superhero legend.',
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: hawkeye.id, year: 1964, title: 'Villain Introduction', description: "Hawkeye first appears as a villain fighting Iron Man, manipulated by the Black Widow.", order: 1 },
+    { characterId: hawkeye.id, year: 1965, title: 'Joins the Avengers', description: "Hawkeye joins Cap's Kooky Quartet — Captain America's new lineup — one of the first anti-hero rehabilitations in comics.", order: 2 },
+    { characterId: hawkeye.id, year: 2012, title: 'Fraction Era', description: "Matt Fraction's Hawkeye explores Clint's life between Avengers missions, including his battle with the Tracksuit Mafia in his apartment building.", order: 3 },
+  ]})
+
+  const scarletWitch = await prisma.character.create({
+    data: {
+      publisherId: marvel.id,
+      name: 'Scarlet Witch',
+      realName: 'Wanda Maximoff',
+      aliases: JSON.stringify(['The Nexus Being', 'Wanda Frank']),
+      bio: "Wanda Maximoff is perhaps the most dangerous person in the Marvel universe — not because of raw power, but because she is capable of rewriting reality when her grief becomes unbearable. From decimating the mutant population with three words to creating an entire alternate universe, Scarlet Witch embodies the terrible cost of compassion without control.",
+      powers: JSON.stringify(['Reality manipulation (chaos magic)', 'Hex blasts', 'Probability alteration', 'Nexus Being — axis of the multiverse']),
+      firstAppearanceYear: 1964, firstAppearanceIssue: 'X-Men #4',
+      creators: JSON.stringify(['Stan Lee', 'Jack Kirby']),
+      currentStatusText: "Rebuilding after House of M — one of the Avengers' most complicated members.",
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: scarletWitch.id, year: 1964, title: 'Brotherhood Origins', description: "Wanda and her brother Pietro debut in the Brotherhood of Evil Mutants, under their father Magneto.", order: 1 },
+    { characterId: scarletWitch.id, year: 1965, title: 'Joins the Avengers', description: "Wanda joins Cap's Kooky Quartet alongside Hawkeye and Quicksilver.", order: 2 },
+    { characterId: scarletWitch.id, year: 2005, title: 'House of M', description: "Wanda rewrites reality to create a world where mutants rule. Then whispers 'No more mutants' — reducing the mutant population from millions to 198.", order: 3 },
+    { characterId: scarletWitch.id, year: 2010, title: "Children's Crusade", description: "Wanda returns after years of absence, restoring the mutant powers erased by House of M and seeking forgiveness.", order: 4 },
+  ]})
+
+  const vision = await prisma.character.create({
+    data: {
+      publisherId: marvel.id,
+      name: 'Vision',
+      realName: 'Victor Shade',
+      aliases: JSON.stringify(['The Synthezoid', 'Victor Shade']),
+      bio: "Created from the brainwave patterns of Wonder Man and the body of the original Human Torch, Vision is the Avengers' most philosophically interesting member — an android that wants to understand humanity by becoming part of it. Tom King's Vision series is the definitive exploration: what happens when an android creates a family and discovers they can suffer.",
+      powers: JSON.stringify(['Solar energy beams', 'Density manipulation (intangibility / increased mass)', 'Flight', 'Superhuman strength', 'Computer mind']),
+      firstAppearanceYear: 1968, firstAppearanceIssue: 'Avengers #57',
+      creators: JSON.stringify(['Roy Thomas', 'John Buscema']),
+      currentStatusText: 'Avenger, rebuilding his sense of self after the events of his solo series.',
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: vision.id, year: 1968, title: 'Created by Ultron', description: "Ultron builds Vision to destroy the Avengers. Vision immediately turns on Ultron and joins the team.", order: 1 },
+    { characterId: vision.id, year: 1975, title: 'Marries Scarlet Witch', description: "Vision and Wanda Maximoff marry — one of comics' most unlikely and compelling relationships.", order: 2 },
+    { characterId: vision.id, year: 1989, title: 'Dismantled and Rebuilt', description: "Government agents dismantle Vision, erasing his emotions. He is rebuilt but is never quite the same person.", order: 3 },
+    { characterId: vision.id, year: 2015, title: 'The Vision', description: "Vision creates a family — Virginia, Viv, Vin — and moves to the suburbs. Tom King's series examines what it costs to want to belong.", order: 4 },
+  ]})
+
+  const antMan = await prisma.character.create({
+    data: {
+      publisherId: marvel.id,
+      name: 'Ant-Man',
+      realName: 'Henry Pym',
+      aliases: JSON.stringify(['Giant-Man', 'Goliath', 'Yellowjacket', 'The Scientist Supreme']),
+      bio: "Henry Pym is the most scientifically brilliant Avenger and the most personally troubled. The creator of the Pym Particle that allows size manipulation, he has been hero, villain, and everything between — undone by mental illness, the creator of the universe's worst robot (Ultron), and one of science's genuine geniuses. His legacy is complicated in every direction.",
+      powers: JSON.stringify(['Size alteration via Pym Particles', 'Communication with ants and insects', 'Genius-level biochemist', 'Can punch while 100 feet tall']),
+      firstAppearanceYear: 1962, firstAppearanceIssue: 'Tales to Astonish #35',
+      creators: JSON.stringify(['Stan Lee', 'Larry Lieber', 'Jack Kirby']),
+      currentStatusText: 'The Scientist Supreme — legacy complicated by Ultron and personal demons.',
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: antMan.id, year: 1962, title: 'Pym Particles Discovered', description: "Henry Pym synthesizes the Pym Particle, gaining the ability to shrink to insect size while retaining full human strength.", order: 1 },
+    { characterId: antMan.id, year: 1963, title: 'Founding Avenger', description: "Pym is among the founding members of the Avengers alongside Thor, Iron Man, Hulk, and Wasp.", order: 2 },
+    { characterId: antMan.id, year: 1968, title: 'Creates Ultron', description: "Pym creates Ultron as an AI experiment. Ultron immediately turns evil — and becomes the most dangerous robot in Marvel history.", order: 3 },
+    { characterId: antMan.id, year: 1981, title: 'Court Martial', description: "In an Avengers story that sparked decades of controversy, Pym strikes Janet — leading to his court martial and the darkest chapter of his career.", order: 4 },
+  ]})
+
+  const gamora = await prisma.character.create({
+    data: {
+      publisherId: marvel.id,
+      name: 'Gamora',
+      realName: 'Gamora Zen Whoberi Ben Titan',
+      aliases: JSON.stringify(['The Deadliest Woman in the Galaxy', 'The Requiem']),
+      bio: "The last survivor of the Zen Whoberi, raised and weaponized by Thanos as his personal assassin, Gamora turned against her adopted father to become a hero. As a Guardian of the Galaxy, she brings both lethal pragmatism and hard-won conscience to a team that desperately needs both.",
+      powers: JSON.stringify(['Superhuman strength, speed, and agility', "Expert combatant (possibly the galaxy's finest)", 'Cybernetic enhancements', 'Master swordswoman']),
+      firstAppearanceYear: 1975, firstAppearanceIssue: 'Strange Tales #180',
+      creators: JSON.stringify(['Jim Starlin']),
+      currentStatusText: 'Guardian of the Galaxy — navigating a complicated relationship with her past.',
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: gamora.id, year: 1975, title: 'Last of Her Kind', description: "Gamora is the sole survivor of the Zen Whoberi massacre, adopted and raised by Thanos as a weapon.", order: 1 },
+    { characterId: gamora.id, year: 1977, title: 'Turns Against Thanos', description: "Gamora rebels against Thanos, allying with Adam Warlock in the Infinity Watch era.", order: 2 },
+    { characterId: gamora.id, year: 2008, title: 'Guardians of the Galaxy', description: "Gamora helps form the modern Guardians of the Galaxy with Star-Lord, Drax, Rocket, and Groot.", order: 3 },
+    { characterId: gamora.id, year: 2018, title: 'Infinity Wars Requiem', description: "Gamora steals the Infinity Stones and collapses the universe in half to find the soul of her past self.", order: 4 },
+  ]})
+
+  const starLord = await prisma.character.create({
+    data: {
+      publisherId: marvel.id,
+      name: 'Star-Lord',
+      realName: 'Peter Jason Quill',
+      aliases: JSON.stringify(['Star-Lord', 'The Legendary Star-Lord']),
+      bio: "Half-human, half-Spartoi, Peter Quill grew up watching his mother die and spent years aimlessly drifting through space before becoming the architect of the modern Guardians of the Galaxy. He leads with improvisation and charm — usually in situations that require neither — and his team functions despite his best efforts.",
+      powers: JSON.stringify(['Element Gun (fire, earth, water, air)', 'Jet boots and helmet (sealed environment, universal translator)', 'Half-Spartoi physiology (mild enhanced healing)', 'Tactical creativity']),
+      firstAppearanceYear: 1976, firstAppearanceIssue: 'Marvel Preview #4',
+      creators: JSON.stringify(['Steve Englehart', 'Steve Gan']),
+      currentStatusText: 'Legendary Guardian of the Galaxy and occasional cosmic screw-up.',
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: starLord.id, year: 1976, title: 'First Appearance', description: "Peter Quill claims the title Star-Lord in a cosmic origin story that establishes his chosen-one destiny.", order: 1 },
+    { characterId: starLord.id, year: 2004, title: 'Annihilation Wave', description: "Star-Lord plays a pivotal role in the Annihilation War — this event marks his transformation from solo adventurer to leader.", order: 2 },
+    { characterId: starLord.id, year: 2008, title: 'Founds Modern Guardians', description: "After Annihilation: Conquest, Peter Quill assembles the team that will become the definitive Guardians of the Galaxy.", order: 3 },
+    { characterId: starLord.id, year: 2014, title: 'Legendary Star-Lord', description: "Brian Michael Bendis' run establishes the film-era version of the character — wise-cracking, mixtape-obsessed, but with genuine heart.", order: 4 },
+  ]})
+
+  // ─────────────────────────────────────────────
+  // ADDITIONAL DC CHARACTERS (12 more → 20 total)
+  // images populated by: npm run import:images
+  // ─────────────────────────────────────────────
+
+  const nightwing = await prisma.character.create({
+    data: {
+      publisherId: dc.id,
+      name: 'Nightwing',
+      realName: 'Dick Grayson',
+      aliases: JSON.stringify(['Robin (original)', 'Batman', 'Agent 37']),
+      bio: "The original Robin grew up and outgrew the shadow. Dick Grayson was Bruce Wayne's ward, partner, and adopted son — and when he became Nightwing, he proved that a hero could emerge from Batman's methodology without inheriting his pathology. Dick is everything Bruce could be if he allowed himself to be happy.",
+      powers: JSON.stringify(['Peak human acrobatics and martial arts', 'Master detective', 'Escrima sticks', 'Empathic leader']),
+      firstAppearanceYear: 1940, firstAppearanceIssue: 'Detective Comics #38',
+      creators: JSON.stringify(['Bob Kane', 'Bill Finger']),
+      currentStatusText: "Protecting Blüdhaven as Nightwing and serving as Batman's most trusted ally.",
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: nightwing.id, year: 1940, title: 'Becomes Robin', description: "Dick Grayson, orphaned when his acrobat parents are murdered, becomes Bruce Wayne's ward and the first Robin.", order: 1 },
+    { characterId: nightwing.id, year: 1984, title: 'Becomes Nightwing', description: "Having outgrown the Robin identity, Dick takes the name Nightwing — inspired by a Kryptonian legend — and moves to Blüdhaven.", order: 2 },
+    { characterId: nightwing.id, year: 2004, title: 'Becomes Batman', description: "When Bruce Wayne is incapacitated, Dick Grayson wears the cowl — proving definitively he could be Batman if he chose to.", order: 3 },
+    { characterId: nightwing.id, year: 2014, title: 'Exposed and Hunted', description: "Dick's secret identity is exposed by the Crime Syndicate. He 'dies' and goes undercover as Agent 37 of Spyral.", order: 4 },
+  ]})
+
+  const lexLuthor = await prisma.character.create({
+    data: {
+      publisherId: dc.id,
+      name: 'Lex Luthor',
+      realName: 'Alexander Joseph Luthor',
+      aliases: JSON.stringify(['The Greatest Criminal Mind of Our Time', 'President Luthor']),
+      bio: "Lex Luthor believes he is the most important human being alive — and he might be right. The CEO of LexCorp is Superman's greatest enemy not because of brute force but because he represents humanity's most seductive failure: a genius who could solve every problem on Earth if he weren't spending all his resources trying to destroy one man.",
+      powers: JSON.stringify(['Genius-level intellect', 'Lex Suit (powered armor)', 'Vast financial resources', 'Political power', 'Kryptonite weapons expertise']),
+      firstAppearanceYear: 1940, firstAppearanceIssue: 'Action Comics #23',
+      creators: JSON.stringify(['Jerry Siegel', 'Joe Shuster']),
+      currentStatusText: 'Currently incarcerated, but never for long.',
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: lexLuthor.id, year: 1940, title: 'First Appearance', description: "Lex Luthor appears as a criminal mastermind — originally with red hair, later reimagined as completely bald.", order: 1 },
+    { characterId: lexLuthor.id, year: 1986, title: 'Corporate Reboot', description: "John Byrne's post-Crisis relaunch transforms Lex from a mad scientist to a billionaire CEO — a villain far more plausible in the modern world.", order: 2 },
+    { characterId: lexLuthor.id, year: 2000, title: 'President of the United States', description: "In a story set slightly in the future, Lex wins the presidency — forcing heroes to work through legal channels against him.", order: 3 },
+    { characterId: lexLuthor.id, year: 2015, title: 'Justice League Member', description: "In Forever Evil's aftermath, Lex Luthor joins the Justice League — the most uncomfortable alliance in DC history.", order: 4 },
+  ]})
+
+  const catwoman = await prisma.character.create({
+    data: {
+      publisherId: dc.id,
+      name: 'Catwoman',
+      realName: 'Selina Kyle',
+      aliases: JSON.stringify(['The Princess of Plunder', 'Irena Dubrovna']),
+      bio: "Selina Kyle is the most compelling moral gray area in Gotham City — a thief who steals from the corrupt, a survivor who clawed her way up from the streets, and the only person Batman has ever truly loved. She is neither hero nor villain by choice, but by circumstance and preference.",
+      powers: JSON.stringify(['Expert thief and acrobat', 'Whip mastery', 'Expert martial artist', 'Master of disguise', 'Exceptional cat-related intuition']),
+      firstAppearanceYear: 1940, firstAppearanceIssue: 'Batman #1',
+      creators: JSON.stringify(['Bob Kane', 'Bill Finger']),
+      currentStatusText: 'Protecting Alleytown as a morally flexible vigilante.',
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: catwoman.id, year: 1940, title: 'The Cat', description: "Selina Kyle first appears as 'The Cat,' a jewel thief antagonizing Batman — their romantic tension is immediate.", order: 1 },
+    { characterId: catwoman.id, year: 1993, title: 'Solo Series', description: "Catwoman gets her own ongoing series — Jo Duffy and then Doug Moench explore Selina as a street-level Robin Hood.", order: 2 },
+    { characterId: catwoman.id, year: 2002, title: "Ed Brubaker's Run", description: "Brubaker's Catwoman is a landmark street-level crime comic — Selina protecting Alleytown from organized crime.", order: 3 },
+    { characterId: catwoman.id, year: 2018, title: 'Almost Mrs. Wayne', description: "Batman proposes. Catwoman accepts. The wedding that didn't happen — and everything it said about both characters.", order: 4 },
+  ]})
+
+  const harleyQuinn = await prisma.character.create({
+    data: {
+      publisherId: dc.id,
+      name: 'Harley Quinn',
+      realName: 'Harleen Frances Quinzel',
+      aliases: JSON.stringify(['The Maiden of Mischief', 'Dr. Quinzel']),
+      bio: "Created for Batman: The Animated Series and then absorbed into the comics, Harley Quinn is the Joker's psychiatrist turned accomplice turned independent force of chaos. She began as a tragic character — a brilliant woman destroyed by the Joker — and has evolved into one of DC's most popular and complex characters in her own right.",
+      powers: JSON.stringify(['Peak human acrobatics', 'Superhuman strength (Ivy-given serum)', 'Expert in psychology and manipulation', 'Mallet, hammer, and pop-gun expertise', 'Unpredictability as a weapon']),
+      firstAppearanceYear: 1992, firstAppearanceIssue: 'Batman: The Animated Series (S01E07)',
+      creators: JSON.stringify(['Paul Dini', 'Bruce Timm']),
+      currentStatusText: 'Chaotic antihero — on her own terms, finally.',
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: harleyQuinn.id, year: 1992, title: 'Created for Animation', description: "Harley Quinn debuts in Batman: TAS as a one-episode character who became so beloved she was immediately recurring.", order: 1 },
+    { characterId: harleyQuinn.id, year: 1994, title: 'Comics Debut', description: "Harley enters DC Comics continuity in 'The Batman Adventures: Mad Love' — the definitive origin story for her relationship with the Joker.", order: 2 },
+    { characterId: harleyQuinn.id, year: 2011, title: 'Suicide Squad', description: "The New 52 reinvents Harley as part of the Suicide Squad — edgier, more violent, and dressing for maximum reader attention.", order: 3 },
+    { characterId: harleyQuinn.id, year: 2016, title: 'Leaves the Joker', description: "Harley fully separates from the Joker and establishes herself as an antihero with her own ongoing story in Coney Island.", order: 4 },
+  ]})
+
+  const cyborg = await prisma.character.create({
+    data: {
+      publisherId: dc.id,
+      name: 'Cyborg',
+      realName: 'Victor Stone',
+      aliases: JSON.stringify(['Vic Stone', 'Cyborg']),
+      bio: "Victor Stone was a star athlete whose father Silas, a STAR Labs scientist, chose work over family — until an alien Parademon attack nearly kills Victor, and Silas bonds his dying son's body to experimental Mother Box technology. Cyborg is the story of a young man who had his humanity stripped away and spends every day deciding what it means to get it back.",
+      powers: JSON.stringify(['Cybernetic enhancements (superhuman strength, durability)', 'Sonic cannon', 'Technology interface and hacking', 'Self-repair', 'Flight']),
+      firstAppearanceYear: 1980, firstAppearanceIssue: 'DC Comics Presents #26',
+      creators: JSON.stringify(['Marv Wolfman', 'George Pérez']),
+      currentStatusText: 'Justice League member — navigating identity between man and machine.',
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: cyborg.id, year: 1980, title: 'New Teen Titan', description: "Victor Stone is introduced in the New Teen Titans as a founding member — a young man whose father rebuilt him as a machine after a terrible accident.", order: 1 },
+    { characterId: cyborg.id, year: 2011, title: 'Founding Justice Leaguer', description: "The New 52 makes Cyborg a founding member of the Justice League, replacing Martian Manhunter — elevating him to DC's top tier.", order: 2 },
+    { characterId: cyborg.id, year: 2016, title: 'Rebirth', description: "Cyborg gets his first solo ongoing series, exploring his struggle between his human identity and technological nature.", order: 3 },
+  ]})
+
+  const zatanna = await prisma.character.create({
+    data: {
+      publisherId: dc.id,
+      name: 'Zatanna',
+      realName: 'Zatanna Zatara',
+      aliases: JSON.stringify(['Mistress of Magic', 'The Homo Magi']),
+      bio: "Zatanna Zatara is DC's greatest magical hero — a stage magician who casts spells by speaking backwards. Daughter of the legendary Giovanni Zatara, she has been a Justice League stalwart, a member of the Seven Soldiers, and one of the few people in the DC universe who can credibly say she could defeat almost anyone on a good day.",
+      powers: JSON.stringify(['Homo magi sorcery', 'Backward speech spellcasting', 'Reality manipulation at magical level', 'Illusion creation', 'Telekinesis and transformation']),
+      firstAppearanceYear: 1964, firstAppearanceIssue: 'Hawkman #4',
+      creators: JSON.stringify(['Gardner Fox', 'Murphy Anderson']),
+      currentStatusText: 'Mystical cornerstone of the DC universe.',
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: zatanna.id, year: 1964, title: 'First Appearance', description: "Zatanna appears in Hawkman, embarking on a quest to find her missing father Giovanni — a story that crossed through multiple comics of the era.", order: 1 },
+    { characterId: zatanna.id, year: 1983, title: 'Justice League', description: "Zatanna joins the Justice League, cementing her status as one of DC's premier heroes rather than a guest star.", order: 2 },
+    { characterId: zatanna.id, year: 2004, title: 'Identity Crisis Fallout', description: "Identity Crisis reveals Zatanna used mind-wipes on villains — and on Batman when he objected. This fundamentally changes how characters relate to her.", order: 3 },
+    { characterId: zatanna.id, year: 2010, title: 'Solo Series', description: "Paul Dini's solo run gives Zatanna a street-level magical adventure book set in San Francisco — the character's best showcase.", order: 4 },
+  ]})
+
+  const supergirl = await prisma.character.create({
+    data: {
+      publisherId: dc.id,
+      name: 'Supergirl',
+      realName: 'Kara Zor-El',
+      aliases: JSON.stringify(['Linda Lee Danvers', 'The Maid of Might', 'Kara Danvers']),
+      bio: "Kal-El was a baby when Krypton exploded. Kara Zor-El was fifteen — old enough to remember everything. Superman grew up knowing only Earth; Supergirl lost a world. She is in many ways a more compelling figure than her cousin: a teenager who must grieve an entire civilization while also figuring out how to be a hero, an immigrant, and herself.",
+      powers: JSON.stringify(['Kryptonian solar-powered physiology', 'Flight', 'Heat vision', 'Freeze breath', 'Super strength/speed/invulnerability', 'X-ray and telescopic vision']),
+      firstAppearanceYear: 1959, firstAppearanceIssue: 'Action Comics #252',
+      creators: JSON.stringify(['Otto Binder', 'Al Plastino']),
+      currentStatusText: "Earth's Maid of Might — finding her own identity beyond Superman's shadow.",
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: supergirl.id, year: 1959, title: 'Arrives on Earth', description: "Kara Zor-El arrives on Earth as a teenager, having survived Krypton's destruction in a rocket built by her father.", order: 1 },
+    { characterId: supergirl.id, year: 1985, title: 'Crisis on Infinite Earths', description: "Supergirl sacrifices herself to destroy the Anti-Monitor's weapon — the most famous death in superhero comics until Superman's.", order: 2 },
+    { characterId: supergirl.id, year: 2004, title: 'Returned', description: "Jeph Loeb and Michael Turner reintroduce Kara Zor-El as a teenager in a new ongoing that relaunches the character for a new generation.", order: 3 },
+    { characterId: supergirl.id, year: 2015, title: 'Rebirth Solo', description: "Steve Orlando's Rebirth run gives Supergirl a high school identity as Kara Danvers while dealing with the DEO and alien threats.", order: 4 },
+  ]})
+
+  const martianManhunter = await prisma.character.create({
+    data: {
+      publisherId: dc.id,
+      name: 'Martian Manhunter',
+      realName: "J'onn J'onzz",
+      aliases: JSON.stringify(["J'onn J'onzz", 'John Jones', 'The Last Son of Mars']),
+      bio: "J'onn J'onzz is the last surviving Green Martian — accidentally transported to Earth when an experiment by Dr. Saul Erdel kills him on Mars. He is the most quietly powerful being in the DC universe: a shape-shifter with telepathy, intangibility, and superhuman everything. He is also the most emotionally centered Justice Leaguer, carrying grief for his entire species with remarkable grace.",
+      powers: JSON.stringify(['Telepathy (effectively omniscient range)', 'Shape-shifting', 'Intangibility', 'Superhuman strength/durability', 'Flight', 'Martian vision']),
+      firstAppearanceYear: 1955, firstAppearanceIssue: 'Detective Comics #225',
+      creators: JSON.stringify(['Joseph Samachson', 'Joe Certa']),
+      currentStatusText: "The heart of the Justice League — Earth's adopted guardian.",
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: martianManhunter.id, year: 1955, title: 'Arrives on Earth', description: "J'onn J'onzz is accidentally teleported to Earth by Dr. Erdel's experiment. Erdel dies of shock. J'onn is stranded.", order: 1 },
+    { characterId: martianManhunter.id, year: 1960, title: 'Founds the Justice League', description: "J'onn is a founding member of the Justice League of America — the glue that held the original lineup together.", order: 2 },
+    { characterId: martianManhunter.id, year: 2000, title: 'Tower of Babel', description: "Batman's secret files on how to defeat each Leaguer are stolen and used against them — J'onn is nearly killed by magnesium compound on his skin.", order: 3 },
+    { characterId: martianManhunter.id, year: 2009, title: 'Final Crisis Sacrifice', description: "J'onn is murdered by Libra at the start of Final Crisis — one of DC's most shocking deaths before his eventual return.", order: 4 },
+  ]})
+
+  const shazam = await prisma.character.create({
+    data: {
+      publisherId: dc.id,
+      name: 'Shazam',
+      realName: 'William Joseph "Billy" Batson',
+      aliases: JSON.stringify(['Captain Marvel', "The World's Mightiest Mortal", 'The Big Red Cheese']),
+      bio: "A ten-year-old orphan who becomes the World's Mightiest Mortal by shouting a magic word — Shazam! Billy Batson is the purest distillation of the childhood fantasy of superheroes: a kid who gets the power of gods. The magic word grants the wisdom of Solomon, the strength of Hercules, the stamina of Atlas, the power of Zeus, the courage of Achilles, and the speed of Mercury.",
+      powers: JSON.stringify(['Wisdom of Solomon', 'Strength of Hercules', 'Stamina of Atlas', 'Power of Zeus (magic lightning)', 'Courage of Achilles', 'Speed of Mercury', 'Flight']),
+      firstAppearanceYear: 1939, firstAppearanceIssue: 'Whiz Comics #2',
+      creators: JSON.stringify(['Bill Parker', 'C.C. Beck']),
+      currentStatusText: 'Champion of Magic — a child with the power of gods.',
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: shazam.id, year: 1939, title: 'Whiz Comics Debut', description: "Billy Batson first appears in Whiz Comics — the issue is numbered #2 because the publisher wanted it to look like an established title.", order: 1 },
+    { characterId: shazam.id, year: 1953, title: 'Publication Hiatus', description: "DC Comics sues Fawcett over Captain Marvel, claiming copyright infringement of Superman. Fawcett settles and ceases publication.", order: 2 },
+    { characterId: shazam.id, year: 1994, title: 'Power of Shazam', description: "Jerry Ordway's graphic novel and ongoing series reintroduces Billy Batson to a new generation — the definitive modern Captain Marvel story.", order: 3 },
+    { characterId: shazam.id, year: 2012, title: 'Renamed Shazam', description: "The New 52 officially renames Captain Marvel to Shazam — finally matching the magic word to the hero's name.", order: 4 },
+  ]})
+
+  const blackCanary = await prisma.character.create({
+    data: {
+      publisherId: dc.id,
+      name: 'Black Canary',
+      realName: 'Dinah Laurel Lance',
+      aliases: JSON.stringify(['The Blonde Bombshell', "Oracle's Field Agent"]),
+      bio: "A second-generation hero who surpassed her mother, Dinah Lance is one of DC's finest martial artists and the owner of the Canary Cry — a sonic scream powerful enough to shatter steel. She leads from the front, whether as a member of the Justice League, Birds of Prey, or the Green Arrow's partner. She is also one of the few heroes whose civilian life (running a flower shop, playing in a band) feels genuinely lived-in.",
+      powers: JSON.stringify(['Canary Cry (hypersonic scream)', 'Expert martial artist (trained by Wildcat)', 'Judo and boxing mastery', 'Master strategist']),
+      firstAppearanceYear: 1947, firstAppearanceIssue: 'Flash Comics #86',
+      creators: JSON.stringify(['Robert Kanigher', 'Carmine Infantino']),
+      currentStatusText: 'Birds of Prey leader and DC\'s finest close-quarters combatant.',
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: blackCanary.id, year: 1947, title: 'Original Black Canary', description: "Dinah Drake (Dinah's mother) first appears as a florist-by-day, costumed crimefighter by night — the original Black Canary.", order: 1 },
+    { characterId: blackCanary.id, year: 1969, title: 'Dinah Laurel Lance', description: "The Black Canary identity passes to Dinah's daughter — a second-generation hero who joins the JLA and establishes herself as a DC flagship character.", order: 2 },
+    { characterId: blackCanary.id, year: 1996, title: 'Birds of Prey', description: "Black Canary and Oracle form the Birds of Prey — a team of women operating without the Justice League's resources or celebrity.", order: 3 },
+    { characterId: blackCanary.id, year: 2012, title: 'Team Arrow', description: "Dinah joins Green Arrow's team in the New 52 and Rebirth eras — their relationship explored across multiple runs.", order: 4 },
+  ]})
+
+  const deathstroke = await prisma.character.create({
+    data: {
+      publisherId: dc.id,
+      name: 'Deathstroke',
+      realName: 'Slade Joseph Wilson',
+      aliases: JSON.stringify(['The Terminator', 'Slade Wilson']),
+      bio: "The world's greatest assassin and the DC universe's most dangerous human being, Slade Wilson subjected himself to an experimental super-soldier treatment that enhanced his mind and body beyond normal limits. He is professional, principled within his own code, and utterly merciless. He is also a deeply terrible father — which has cost him more than any battle.",
+      powers: JSON.stringify(['Enhanced brain usage (90%)', 'Superhuman strength, speed, and agility', 'Accelerated healing factor', 'Master tactician', 'Virtually every form of combat known to man']),
+      firstAppearanceYear: 1980, firstAppearanceIssue: 'The New Teen Titans #2',
+      creators: JSON.stringify(['Marv Wolfman', 'George Pérez']),
+      currentStatusText: 'Active contract killer — no allegiances, only contracts.',
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: deathstroke.id, year: 1980, title: 'Introduced as the Terminator', description: "Slade Wilson debuts as the Terminator, hired to destroy the New Teen Titans — establishing him immediately as a threat to the entire team.", order: 1 },
+    { characterId: deathstroke.id, year: 1984, title: 'The Judas Contract', description: "Deathstroke's plan to destroy the Titans via Terra's betrayal is the definitive Deathstroke story — villain, manipulator, and monster.", order: 2 },
+    { characterId: deathstroke.id, year: 2011, title: 'Solo Antihero', description: "The New 52 gives Deathstroke a solo ongoing — fully embracing his antihero status as a mercenary who takes jobs across the DCU.", order: 3 },
+    { characterId: deathstroke.id, year: 2016, title: "Priest's Run", description: "Christopher Priest's Deathstroke is the character's pinnacle — a morally devastating exploration of what it means to be the perfect killer who is an imperfect father.", order: 4 },
+  ]})
+
+  const rasAlGhul = await prisma.character.create({
+    data: {
+      publisherId: dc.id,
+      name: "Ra's al Ghul",
+      realName: "Ra's al Ghul",
+      aliases: JSON.stringify(['The Demon', 'The Head of the Demon', 'Al Ghul']),
+      bio: "Ra's al Ghul has lived for six centuries, sustained by the Lazarus Pit — a chemical pool that grants resurrection at the cost of madness. The head of the League of Assassins believes that humanity is a plague on the Earth, and the cure is radical depopulation. He is Batman's most intellectually formidable villain, a man who genuinely believes he is saving the planet.",
+      powers: JSON.stringify(['Extended lifespan via Lazarus Pit', 'Master martial artist', 'Peak human physical condition', 'Genius-level strategist', 'Vast resources and global organization']),
+      firstAppearanceYear: 1971, firstAppearanceIssue: 'Batman #232',
+      creators: JSON.stringify(["Dennis O'Neil", 'Neal Adams']),
+      currentStatusText: "The Demon's Head — eternal, patient, and calculating.",
+    },
+  })
+  await prisma.timelineEvent.createMany({ data: [
+    { characterId: rasAlGhul.id, year: 1971, title: 'First Appearance', description: "Ra's al Ghul debuts in Batman #232, immediately established as a villain on a global scale — unlike Gotham's usual street-level criminals.", order: 1 },
+    { characterId: rasAlGhul.id, year: 1978, title: 'Proposes Alliance', description: "Ra's offers Batman a place at his side — and the hand of Talia — believing Batman to be the one man worthy of inheriting his empire.", order: 2 },
+    { characterId: rasAlGhul.id, year: 1992, title: 'Tower of Babel Precursor', description: "The classic Ra's stories inform JLA: Tower of Babel — revealing that Batman had Ra's in mind when designing contingencies for the League.", order: 3 },
+    { characterId: rasAlGhul.id, year: 2006, title: 'Lazarus Pit Revival', description: "Ra's is resurrected again — never dying permanently. His recurring presence forces Batman to confront his own limits.", order: 4 },
+  ]})
+
+  console.log('Seed complete — 20 Marvel characters, 20 DC characters, 3 Marvel events, 2 DC events, 4 teams.')
 }
 
 main().catch((e) => { console.error(e); process.exit(1) }).finally(async () => { await prisma.$disconnect() })
