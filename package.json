@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "db:spoilers": "ts-node --project scripts/tsconfig.json prisma/apply-spoilers.ts",
     "smoke": "ts-node --project scripts/tsconfig.json scripts/smoke.ts",
     "import:images": "dotenv run -f .env.local -- ts-node --project scripts/tsconfig.json scripts/cv-import.ts",
     "cv:search": "dotenv run -f .env.local -- ts-node --project scripts/tsconfig.json scripts/cv-search.ts",

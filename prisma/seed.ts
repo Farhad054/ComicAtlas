@@ -1583,6 +1583,9 @@ async function main() {
     { characterId: rasAlGhul.id, year: 2006, title: 'Lazarus Pit Revival', description: "Ra's is resurrected again — never dying permanently. His recurring presence forces Batman to confront his own limits.", order: 4 },
   ]})
 
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  await require('./apply-spoilers').applySpoilers(prisma)
+
   console.log('Seed complete — 20 Marvel characters, 20 DC characters, 3 Marvel events, 2 DC events, 4 teams.')
 }
 
