@@ -1,0 +1,4 @@
+#!/bin/sh
+# Strips AI attribution trailers from commit messages.
+f="$1"
+grep -viE '^(co-authored-by:.*(claude|anthropic)|claude-session:|.*generated with .*claude)' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
