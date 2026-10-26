@@ -1,21 +1,10 @@
 import Link from 'next/link'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { getViewer } from '@/lib/spoilerContext'
 import { SpoilerToggle } from './SpoilerToggle'
 import { SearchBar } from './SearchBar'
 
 export async function Header() {
-  const session = await getServerSession(authOptions)
-  let spoilerMode = false
-
-  if (session?.user) {
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { spoilerModeOn: true },
-    })
-    spoilerMode = user?.spoilerModeOn ?? false
-  }
+  const { userId, spoilers } = await getViewer()
 
   return (
     <header className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur border-b border-gray-800">
@@ -28,8 +17,8 @@ export async function Header() {
           <Link href="/teams" className="text-sm text-gray-400 hover:text-white transition-colors hidden sm:block">Teams</Link>
           <Link href="/creators" className="text-sm text-gray-400 hover:text-white transition-colors hidden md:block">Creators</Link>
           <SearchBar />
-          <SpoilerToggle initialValue={spoilerMode} />
-          {session ? (
+          <SpoilerToggle protect={spoilers.protect} />
+          {userId ? (
             <div className="flex items-center gap-3">
               <Link href="/profile" className="text-sm text-gray-400 hover:text-white transition-colors">
                 Profile

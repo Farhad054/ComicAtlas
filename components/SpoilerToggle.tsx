@@ -1,39 +1,36 @@
 'use client'
 
-import { useState } from 'react'
-import { useSession } from 'next-auth/react'
+import { useOptimistic, useTransition } from 'react'
+import { setSpoilerProtection } from '@/app/actions/spoiler'
 
 interface SpoilerToggleProps {
-  initialValue: boolean
+  protect: boolean
 }
 
-export function SpoilerToggle({ initialValue }: SpoilerToggleProps) {
-  const { data: session } = useSession()
-  const [spoilerMode, setSpoilerMode] = useState(initialValue)
+export function SpoilerToggle({ protect }: SpoilerToggleProps) {
+  const [isPending, startTransition] = useTransition()
+  const [optimistic, setOptimistic] = useOptimistic(protect)
 
-  const toggle = async () => {
-    const newValue = !spoilerMode
-    setSpoilerMode(newValue)
-    if (session) {
-      await fetch('/api/spoiler', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ spoilerModeOn: newValue }),
-      })
-    }
+  const toggle = () => {
+    const next = !optimistic
+    startTransition(async () => {
+      setOptimistic(next)
+      await setSpoilerProtection(next)
+    })
   }
 
   return (
     <button
+      type="button"
       onClick={toggle}
+      aria-pressed={optimistic}
+      disabled={isPending}
       className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-        spoilerMode
-          ? 'bg-yellow-500 text-black'
-          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+        optimistic ? 'bg-yellow-500 text-black' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
       }`}
     >
-      <span>{spoilerMode ? '🔒' : '👁'}</span>
-      <span>{spoilerMode ? 'Spoilers Hidden' : 'Spoilers Visible'}</span>
+      <span>{optimistic ? '🔒' : '👁'}</span>
+      <span>{optimistic ? 'Spoilers Hidden' : 'Spoilers Visible'}</span>
     </button>
   )
 }
