@@ -10,7 +10,7 @@ model User {
   id             String           @id @default(cuid())
   email          String           @unique
   password       String?
-  spoilerModeOn  Boolean          @default(false)
+  spoilerModeOn  Boolean          @default(true)
   createdAt      DateTime         @default(now())
   readingProgress ReadingProgress[]
   accounts       Account[]
@@ -71,6 +71,8 @@ model Character {
   firstAppearanceIssue String?
   creators            String           @default("[]")
   currentStatusText   String?
+  statusIsSpoiler     Boolean          @default(false)
+  statusSpoilerAfterIssueId String?
   imageUrl            String?
   imageOverrideUrl    String?
   publisher           Publisher        @relation(fields: [publisherId], references: [id])
@@ -89,6 +91,8 @@ model TimelineEvent {
   title       String
   description String
   order       Int
+  isSpoiler   Boolean   @default(false)
+  spoilerAfterIssueId String?
   character   Character @relation(fields: [characterId], references: [id])
 }
 
@@ -122,6 +126,8 @@ model TeamMembership {
   role        String?
   joinedNote  String?
   leftNote    String?
+  isSpoiler   Boolean    @default(false)
+  spoilerAfterIssueId String?
   team        Team       @relation(fields: [teamId], references: [id])
   character   Character? @relation(fields: [characterId], references: [id])
 }
@@ -175,6 +181,8 @@ model Event {
   cause           String?
   leadsFromEventId String?
   leadsToEventId  String?
+  outcomeText     String?
+  outcomeSpoilerAfterIssueId String?
   imageUrl        String?
   publisher       Publisher      @relation(fields: [publisherId], references: [id])
   readingPath     ReadingPath?
@@ -187,6 +195,8 @@ model ImpactEntry {
   eventId         String
   characterId     String
   consequenceText String
+  isSpoiler       Boolean   @default(true)
+  spoilerAfterIssueId String?
   event           Event     @relation(fields: [eventId], references: [id])
   character       Character @relation(fields: [characterId], references: [id])
 }
@@ -210,6 +220,8 @@ model ReadingPathNode {
   whyItMatters    String
   required        Boolean     @default(true)
   estTimeMinutes  Int         @default(20)
+  isSpoiler       Boolean     @default(false)
+  spoilerAfterIssueId String?
   order           Int
   readingPath     ReadingPath @relation(fields: [readingPathId], references: [id])
   issue           Issue       @relation(fields: [issueId], references: [id])
