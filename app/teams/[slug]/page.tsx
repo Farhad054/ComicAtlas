@@ -1,153 +1,67 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { prisma } from '@/lib/prisma'
+import { getViewer } from '@/lib/spoilerContext'
+import { gate } from '@/lib/spoilers'
+import { toSlug } from '@/lib/slug'
+import { SpoilerText } from '@/components/SpoilerText'
+import { ReadingPathList, TierSwitcher, parseTier, type Tier } from '@/components/ReadingPathList'
 
-type Tier = 'beginner' | 'essential' | 'complete'
-
-interface PathNode {
-  id: string
-  issueId: string
-  whyItMatters: string
-  required: boolean
-  estTimeMinutes: number
-  order: number
-  issue: {
-    id: string
-    seriesName: string
-    issueNumber: string
-    year: number
-    coverImageUrl: string | null
-    summary: string | null
-  }
+const TIER_DESC: Record<Tier, string> = {
+  beginner: 'Best entry points — minimal context required',
+  essential: 'The must-reads that define this team',
+  complete: 'The full story, cover to cover',
 }
 
-interface ReadingPath {
-  id: string
-  tier: string
-  nodes: PathNode[]
-}
+export default async function TeamPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>
+  searchParams: Promise<{ tier?: string }>
+}) {
+  const { slug } = await params
+  const { tier: tierParam } = await searchParams
 
-interface Membership {
-  id: string
-  displayName: string
-  role: string | null
-  leftNote: string | null
-  characterId: string | null
-  character: {
-    name: string
-    publisher: { slug: string }
-  } | null
-}
+  const team = await prisma.team.findUnique({
+    where: { slug },
+    include: {
+      publisher: { select: { slug: true, name: true } },
+      memberships: { include: { character: { include: { publisher: { select: { slug: true } } } } } },
+      lineups: { orderBy: { id: 'asc' } },
+      readingPaths: { include: { nodes: { orderBy: { order: 'asc' }, include: { issue: true } } } },
+      eventTeams: { include: { event: { include: { publisher: { select: { slug: true } } } } } },
+      relationshipsA: { include: { teamB: { select: { id: true, name: true, slug: true } } } },
+      relationshipsB: { include: { teamA: { select: { id: true, name: true, slug: true } } } },
+    },
+  })
+  if (!team) notFound()
 
-interface Lineup {
-  id: string
-  name: string
-  years: string | null
-  description: string | null
-  memberDisplayNames: string
-}
+  const { userId, spoilers } = await getViewer()
 
-interface EventTeam {
-  id: string
-  event: {
-    id: string
-    name: string
-    publisher: { slug: string }
-  }
-}
+  const availableTiers = (['beginner', 'essential', 'complete'] as Tier[]).filter((t) =>
+    team.readingPaths.some((p) => p.tier === t)
+  )
+  const activeTier = parseTier(tierParam, availableTiers.includes('essential') ? 'essential' : availableTiers[0] ?? 'essential')
+  const activePath = team.readingPaths.find((p) => p.tier === activeTier)
+  const pathNodes = (activePath?.nodes ?? []).map((node) => ({
+    id: node.id,
+    issueId: node.issueId,
+    required: node.required,
+    estTimeMinutes: node.estTimeMinutes,
+    whyItMatters: gate(spoilers, node, node.whyItMatters),
+    issue: node.issue,
+  }))
+  const memberships = team.memberships.map((m) => ({
+    ...m,
+    leftNote: m.leftNote ? gate(spoilers, m, m.leftNote) : null,
+  }))
 
-interface TeamRelationship {
-  id: string
-  type: string
-  teamA: { id: string; name: string; slug: string }
-  teamB: { id: string; name: string; slug: string }
-}
-
-interface Team {
-  id: string
-  name: string
-  slug: string
-  bio: string
-  baseOfOperations: string | null
-  firstAppearanceIssue: string | null
-  firstAppearanceYear: number | null
-  creators: string
-  publisher: { slug: string; name: string }
-  memberships: Membership[]
-  lineups: Lineup[]
-  readingPaths: ReadingPath[]
-  eventTeams: EventTeam[]
-  relationshipsA: TeamRelationship[]
-  relationshipsB: TeamRelationship[]
-}
-
-export default function TeamPage() {
-  const params = useParams()
-  const slug = params.slug as string
-
-  const [team, setTeam] = useState<Team | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [activeTier, setActiveTier] = useState<Tier>('essential')
-  const [readIssues, setReadIssues] = useState<Set<string>>(new Set())
-
-  useEffect(() => {
-    async function load() {
-      const res = await fetch(`/api/teams/${slug}/reading-path`)
-      if (!res.ok) { setLoading(false); return }
-      const data = await res.json()
-      setTeam(data.team)
-
-      const progressRes = await fetch('/api/progress')
-      const progressData = await progressRes.json()
-      setReadIssues(new Set(progressData))
-      setLoading(false)
-    }
-    load()
-  }, [slug])
-
-  const toggleRead = async (issueId: string) => {
-    const newRead = !readIssues.has(issueId)
-    const next = new Set(readIssues)
-    if (newRead) next.add(issueId)
-    else next.delete(issueId)
-    setReadIssues(next)
-    await fetch('/api/progress', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ issueId, read: newRead }),
-    })
-  }
-
-  const tierConfig = {
-    beginner:  { label: 'Beginner',  color: 'green',  desc: 'Best entry points — minimal context required' },
-    essential: { label: 'Essential', color: 'yellow', desc: 'The must-reads that define this team' },
-    complete:  { label: 'Complete',  color: 'purple', desc: 'The full story, cover to cover' },
-  }
-
-  if (loading) {
-    return (
-      <div className="max-w-5xl mx-auto px-4 py-12 text-center text-gray-400">
-        Loading team…
-      </div>
-    )
-  }
-
-  if (!team) {
-    return (
-      <div className="max-w-5xl mx-auto px-4 py-12 text-center text-gray-400">
-        Team not found.
-      </div>
-    )
-  }
+  const creators: string[] = JSON.parse(team.creators)
 
   const isMarvel = team.publisher.slug === 'marvel'
-  const creators: string[] = JSON.parse(team.creators)
-  const activePath = team.readingPaths.find((p) => p.tier === activeTier)
-  const firstUnread = activePath?.nodes.find((n) => !readIssues.has(n.issueId))
-
-  const allRelationships: { type: string; other: { id: string; name: string; slug: string } }[] = [
+  
+  const allRelationships = [
     ...team.relationshipsA.map((r) => ({ type: r.type, other: r.teamB })),
     ...team.relationshipsB.map((r) => ({ type: r.type, other: r.teamA })),
   ]
@@ -198,12 +112,12 @@ export default function TeamPage() {
       </div>
 
       {/* Current Roster */}
-      {team.memberships.length > 0 && (
+      {memberships.length > 0 && (
         <div className="mb-10">
           <h2 className="text-xl font-black mb-4">Current Roster</h2>
           <div className="flex flex-wrap gap-3">
-            {team.memberships.map((m) => {
-              const charSlug = m.character?.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+            {memberships.map((m) => {
+              const charSlug = m.character ? toSlug(m.character.name) : null
               const pubSlug = m.character?.publisher.slug
               if (m.characterId && charSlug && pubSlug) {
                 return (
@@ -231,7 +145,9 @@ export default function TeamPage() {
                   <div className="text-xs font-semibold text-center text-gray-400 leading-tight">{m.displayName}</div>
                   {m.role && <div className="text-xs text-gray-600 text-center mt-1 leading-tight">{m.role}</div>}
                   {m.leftNote && (
-                    <div className="text-xs text-yellow-700 text-center mt-1 leading-tight italic">{m.leftNote}</div>
+                    <div className="text-xs text-yellow-700 text-center mt-1 leading-tight italic">
+                      <SpoilerText value={m.leftNote} />
+                    </div>
                   )}
                 </div>
               )
@@ -273,110 +189,14 @@ export default function TeamPage() {
       )}
 
       {/* Reading Path */}
-      {team.readingPaths.length > 0 && (
+      {availableTiers.length > 0 && (
         <div className="mb-10">
           <h2 className="text-xl font-black mb-4">Reading Path</h2>
-
-          {/* Tier Switcher */}
-          <div className="flex gap-3 mb-6 p-1 bg-gray-900 rounded-xl border border-gray-800">
-            {(Object.entries(tierConfig) as [Tier, typeof tierConfig[Tier]][]).map(([tier, config]) => {
-              const hasPath = team.readingPaths.some((p) => p.tier === tier)
-              if (!hasPath) return null
-              return (
-                <button
-                  key={tier}
-                  onClick={() => setActiveTier(tier)}
-                  className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
-                    activeTier === tier
-                      ? config.color === 'green'
-                        ? 'bg-green-600 text-white'
-                        : config.color === 'yellow'
-                        ? 'bg-yellow-500 text-black'
-                        : 'bg-purple-600 text-white'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  {config.label}
-                </button>
-              )
-            })}
+          <div className="mb-6">
+            <TierSwitcher basePath={`/teams/${team.slug}`} active={activeTier} available={availableTiers} />
           </div>
-
-          <div className="text-sm text-gray-400 mb-6">{tierConfig[activeTier].desc}</div>
-
-          {activePath ? (
-            <div className="relative">
-              <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-800" />
-              <div className="space-y-4">
-                {activePath.nodes.map((node) => {
-                  const isRead = readIssues.has(node.issueId)
-                  const isNext = node.id === firstUnread?.id
-                  return (
-                    <div key={node.id} className="relative flex gap-4 pl-14">
-                      <div
-                        className={`absolute left-4 w-4 h-4 rounded-full border-2 top-4 transition-all ${
-                          isRead
-                            ? 'bg-green-500 border-green-500'
-                            : isNext
-                            ? 'bg-yellow-500 border-yellow-500 ring-4 ring-yellow-500/30'
-                            : 'bg-gray-950 border-gray-700'
-                        }`}
-                      />
-                      <div
-                        className={`flex-1 rounded-xl border p-4 transition-all ${
-                          isRead
-                            ? 'bg-green-950/30 border-green-900'
-                            : isNext
-                            ? 'bg-yellow-950/30 border-yellow-700'
-                            : 'bg-gray-900 border-gray-800'
-                        }`}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className="w-12 h-16 bg-gray-800 rounded-lg flex-shrink-0 overflow-hidden">
-                            {node.issue.coverImageUrl ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={node.issue.coverImageUrl} alt={node.issue.seriesName} className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs text-center p-1">
-                                #{node.issue.issueNumber}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-start justify-between gap-2">
-                              <div>
-                                <div className="font-semibold text-sm">{node.issue.seriesName} #{node.issue.issueNumber}</div>
-                                <div className="text-gray-500 text-xs">{node.issue.year}</div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                {!node.required && (
-                                  <span className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full">Optional</span>
-                                )}
-                                <span className="text-xs text-gray-500">~{node.estTimeMinutes}m</span>
-                              </div>
-                            </div>
-                            <p className="text-gray-400 text-xs mt-2 italic">&quot;{node.whyItMatters}&quot;</p>
-                            <button
-                              onClick={() => toggleRead(node.issueId)}
-                              className={`mt-3 text-xs px-3 py-1.5 rounded-full font-semibold transition-all ${
-                                isRead
-                                  ? 'bg-green-600 text-white hover:bg-green-700'
-                                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                              }`}
-                            >
-                              {isRead ? '✓ Read' : 'Mark as read'}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          ) : (
-            <div className="text-center text-gray-500 py-8">No path available for this tier yet.</div>
-          )}
+          <div className="text-sm text-gray-400 mb-6">{TIER_DESC[activeTier]}</div>
+          <ReadingPathList nodes={pathNodes} readIssueIds={spoilers.readIssueIds} signedIn={userId !== null} />
         </div>
       )}
 

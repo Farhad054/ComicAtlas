@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getViewer } from '@/lib/spoilerContext'
+import { gate } from '@/lib/spoilers'
 import { SpoilerText } from '@/components/SpoilerText'
 import Link from 'next/link'
 
@@ -25,19 +25,26 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
 
   if (!event) notFound()
 
-  const session = await getServerSession(authOptions)
-  let spoilerMode = false
-  if (session?.user) {
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { spoilerModeOn: true },
-    })
-    spoilerMode = user?.spoilerModeOn ?? false
-  }
+  const { spoilers } = await getViewer()
+  const outcome = event.outcomeText
+    ? gate(
+        spoilers,
+        { isSpoiler: true, spoilerAfterIssueId: event.outcomeSpoilerAfterIssueId },
+        event.outcomeText
+      )
+    : null
+  const nodes = (event.readingPath?.nodes ?? []).map((node) => ({
+    ...node,
+    whyItMatters: gate(spoilers, node, node.whyItMatters),
+  }))
+  const impact = event.impactEntries.map((entry) => ({
+    ...entry,
+    consequence: gate(spoilers, entry, entry.consequenceText),
+  }))
 
   const isMarvel = event.publisher.slug === 'marvel'
-  const coreNodes = event.readingPath?.nodes.filter((n) => n.required) ?? []
-  const optionalNodes = event.readingPath?.nodes.filter((n) => !n.required) ?? []
+  const coreNodes = nodes.filter((n) => n.required)
+  const optionalNodes = nodes.filter((n) => !n.required)
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -48,6 +55,12 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
         </div>
         <h1 className="text-4xl font-black mb-4">{event.name}</h1>
         <p className="text-gray-300 leading-relaxed">{event.summary}</p>
+        {outcome && (
+          <div className="mt-4 p-3 bg-black/30 rounded-lg border border-gray-800">
+            <span className="text-xs text-gray-500 uppercase tracking-wider">Outcome: </span>
+            <SpoilerText value={outcome} className="text-sm text-gray-300" />
+          </div>
+        )}
         {event.cause && (
           <div className="mt-4 p-3 bg-black/30 rounded-lg border border-gray-800">
             <span className="text-xs text-gray-500 uppercase tracking-wider">Cause: </span>
@@ -68,7 +81,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
                 </div>
                 <div>
                   <div className="font-semibold text-sm">{node.issue.seriesName} #{node.issue.issueNumber} ({node.issue.year})</div>
-                  <p className="text-gray-400 text-xs mt-1 italic">&quot;{node.whyItMatters}&quot;</p>
+                  <p className="text-gray-400 text-xs mt-1 italic"><SpoilerText value={node.whyItMatters} /></p>
                 </div>
               </div>
             ))}
@@ -89,7 +102,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
                 </div>
                 <div>
                   <div className="font-semibold text-sm">{node.issue.seriesName} #{node.issue.issueNumber} ({node.issue.year})</div>
-                  <p className="text-gray-400 text-xs mt-1 italic">&quot;{node.whyItMatters}&quot;</p>
+                  <p className="text-gray-400 text-xs mt-1 italic"><SpoilerText value={node.whyItMatters} /></p>
                 </div>
               </div>
             ))}
@@ -98,12 +111,12 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
       )}
 
       {/* Impact Map */}
-      {event.impactEntries.length > 0 && (
+      {impact.length > 0 && (
         <div className="mb-8">
           <h2 className="text-xl font-black mb-4">Impact Map</h2>
           <p className="text-gray-400 text-sm mb-4">How this event changed each character.</p>
           <div className="grid gap-3 md:grid-cols-2">
-            {event.impactEntries.map((entry) => (
+            {impact.map((entry) => (
               <div key={entry.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
                 <Link
                   href={`/${event.publisher.slug}/${entry.character.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
@@ -112,7 +125,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
                   {entry.character.name}
                 </Link>
                 <div className="mt-1">
-                  <SpoilerText text={entry.consequenceText} spoilerMode={spoilerMode} className="text-gray-300 text-sm" />
+                  <SpoilerText value={entry.consequence} className="text-gray-300 text-sm" />
                 </div>
               </div>
             ))}

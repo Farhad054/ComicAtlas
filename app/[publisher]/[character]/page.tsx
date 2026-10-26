@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getViewer } from '@/lib/spoilerContext'
+import { gate } from '@/lib/spoilers'
 import Link from 'next/link'
 import { SpoilerText } from '@/components/SpoilerText'
 import { ConnectionsGraph } from '@/components/ConnectionsGraph'
@@ -39,15 +39,20 @@ export default async function CharacterPage({
   const { character, publisher } = result
   if (!character) notFound()
 
-  const session = await getServerSession(authOptions)
-  let spoilerMode = false
-  if (session?.user) {
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { spoilerModeOn: true },
-    })
-    spoilerMode = user?.spoilerModeOn ?? false
-  }
+  const { spoilers } = await getViewer()
+  const status = character.currentStatusText
+    ? gate(
+        spoilers,
+        { isSpoiler: character.statusIsSpoiler, spoilerAfterIssueId: character.statusSpoilerAfterIssueId },
+        character.currentStatusText
+      )
+    : null
+  const timeline = character.timelineEvents.map((event) => ({
+    id: event.id,
+    year: event.year,
+    title: gate(spoilers, event, event.title),
+    description: gate(spoilers, event, event.description),
+  }))
 
   const isMarvel = publisher.slug === 'marvel'
   const aliases: string[] = JSON.parse(character.aliases)
@@ -128,32 +133,32 @@ export default async function CharacterPage({
             </div>
           </div>
         )}
-        {character.currentStatusText && (
+        {status && (
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 col-span-2 md:col-span-4">
             <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Current Status</div>
-            <SpoilerText text={character.currentStatusText} spoilerMode={spoilerMode} className="text-sm" />
+            <SpoilerText value={status} className="text-sm" />
           </div>
         )}
       </div>
 
       {/* Timeline */}
-      {character.timelineEvents.length > 0 && (
+      {timeline.length > 0 && (
         <div className="mb-8">
           <h2 className="text-xl font-black mb-4">Key Life Events</h2>
           <div className="relative">
             <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-800" />
             <div className="space-y-4">
-              {character.timelineEvents.map((event) => (
+              {timeline.map((event) => (
                 <div key={event.id} className="relative flex gap-4 pl-10">
                   <div className={`absolute left-2.5 w-3 h-3 rounded-full border-2 top-1.5 ${isMarvel ? 'border-red-500 bg-gray-950' : 'border-blue-500 bg-gray-950'}`} />
                   <div className="flex-1 bg-gray-900 border border-gray-800 rounded-xl p-4">
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <span className={`text-xs font-bold ${isMarvel ? 'text-red-400' : 'text-blue-400'}`}>{event.year}</span>
-                        <h3 className="font-semibold text-sm">{event.title}</h3>
+                        <h3 className="font-semibold text-sm">{event.title.hidden ? 'Hidden event' : event.title.value}</h3>
                       </div>
                     </div>
-                    <p className="text-gray-400 text-sm mt-1">{event.description}</p>
+                    <p className="text-gray-400 text-sm mt-1"><SpoilerText value={event.description} /></p>
                   </div>
                 </div>
               ))}
