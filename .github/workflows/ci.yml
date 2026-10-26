@@ -42,6 +42,20 @@ jobs:
           NEXTAUTH_SECRET: ci-test-secret-32-chars-minimum-x
           NEXTAUTH_URL: http://localhost:3000
 
-  # Playwright e2e tests require a running server with seeded DB.
-  # Run locally with: npm run test:e2e
-  # TODO: add a separate CI job that sets up Postgres, seeds, starts server, runs e2e.
+      - name: Create and seed e2e database
+        run: |
+          npx prisma db push --config prisma7.config.ts
+          npx prisma db seed --config prisma7.config.ts
+        env:
+          DATABASE_URL: file:./ci.db
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E tests
+        run: npm run test:e2e
+        env:
+          CI: 'true'
+          DATABASE_URL: file:./ci.db
+          NEXTAUTH_SECRET: ci-test-secret-32-chars-minimum-x
+          NEXTAUTH_URL: http://localhost:3000

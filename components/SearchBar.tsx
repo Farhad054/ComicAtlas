@@ -69,7 +69,7 @@ export function SearchBar() {
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => results && setOpen(true)}
             placeholder="Search characters, events…"
-            className="bg-gray-800 border border-gray-700 rounded-full pl-8 pr-4 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 w-48 focus:w-64 transition-all"
+            className="bg-gray-800 border border-gray-700 rounded-full pl-8 pr-4 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 w-24 sm:w-48 focus:w-40 sm:focus:w-64 transition-all"
           />
         </div>
       </form>

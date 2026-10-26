@@ -6,6 +6,10 @@
  *   1. HTTP status is 200
  *   2. All <img src="..."> URLs in the page return 200 (no broken images)
  *   3. No <img> renders without an src (missing fallback)
+ *   4. No "Loading…" placeholder in the server-rendered HTML
+ *   5. With spoiler protection on (no cookie), no flagged spoiler text from
+ *      the DB appears anywhere in the HTML
+ *   Titles must be unique per route; duplicates are reported as warnings.
  *
  * Reports a pass/fail summary with details.
  */
@@ -77,19 +81,64 @@ interface Result {
   route: string
   pageStatus: number
   brokenImages: string[]
+  loading: boolean
+  leaks: string[]
+  title: string
   ok: boolean
 }
 
-async function checkRoute(route: string): Promise<Result> {
+function decode(html: string): string {
+  return html
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+}
+
+function extractTitle(html: string): string {
+  return /<title>([^<]*)<\/title>/i.exec(html)?.[1] ?? ''
+}
+
+/** Every text the DB flags as a spoiler. Signed-out visitors must never receive these. */
+async function loadSpoilerStrings(): Promise<string[]> {
+  const [timeline, impact, nodes, characters, members, events] = await Promise.all([
+    prisma.timelineEvent.findMany({ where: { isSpoiler: true } }),
+    prisma.impactEntry.findMany({ where: { isSpoiler: true } }),
+    prisma.readingPathNode.findMany({ where: { isSpoiler: true } }),
+    prisma.character.findMany({ where: { statusIsSpoiler: true } }),
+    prisma.teamMembership.findMany({ where: { isSpoiler: true } }),
+    prisma.event.findMany({ where: { outcomeText: { not: null } } }),
+  ])
+  // Timeline titles are left out: many are public comic or concept names ("Phoenix Force").
+  // Each is hidden together with its description, which is checked here.
+  return [
+    ...timeline.map((t) => t.description),
+    ...impact.map((i) => i.consequenceText),
+    ...nodes.map((n) => n.whyItMatters),
+    ...characters.map((c) => c.currentStatusText ?? ''),
+    ...members.map((m) => m.leftNote ?? ''),
+    ...events.map((e) => e.outcomeText ?? ''),
+  ].filter((t) => t.length >= 12)
+}
+
+async function checkRoute(route: string, spoilerStrings: string[]): Promise<Result> {
   const url = BASE_URL + route
   let pageStatus = 0
   const brokenImages: string[] = []
+  let loading = false
+  const leaks: string[] = []
+  let title = ''
 
   try {
     const { status, body } = await fetch(url)
     pageStatus = status
 
     if (status === 200) {
+      const text = decode(body)
+      title = extractTitle(text)
+      loading = /Loading[^<]{0,30}(\.\.\.|…)/.test(text)
+      leaks.push(...spoilerStrings.filter((t) => text.includes(t)))
       const srcs = extractImageSrcs(body)
       // Check external image URLs (absolute http/https)
       const external = srcs.filter((s) => s.startsWith('http'))
@@ -109,7 +158,10 @@ async function checkRoute(route: string): Promise<Result> {
     route,
     pageStatus,
     brokenImages,
-    ok: pageStatus === 200 && brokenImages.length === 0,
+    loading,
+    leaks,
+    title,
+    ok: pageStatus === 200 && brokenImages.length === 0 && !loading && leaks.length === 0,
   }
 }
 
@@ -120,6 +172,9 @@ async function main() {
     prisma.event.findMany(),
     prisma.team.findMany(),
   ])
+
+  const spoilerStrings = await loadSpoilerStrings()
+  console.log(`Loaded ${spoilerStrings.length} flagged spoiler strings.`)
 
   const routes: string[] = [
     '/',
@@ -149,17 +204,24 @@ async function main() {
 
   const results: Result[] = []
   for (const route of routes) {
-    const r = await checkRoute(route)
+    const r = await checkRoute(route, spoilerStrings)
     const icon = r.ok ? '✓' : '✗'
     const detail = r.ok
       ? ''
-      : ` [${r.pageStatus !== 200 ? `HTTP ${r.pageStatus}` : ''}${r.brokenImages.length ? ` broken images: ${r.brokenImages.join(', ')}` : ''}]`
+      : ` [${r.pageStatus !== 200 ? `HTTP ${r.pageStatus}` : ''}${r.brokenImages.length ? ` broken images: ${r.brokenImages.join(', ')}` : ''}${r.loading ? ' "Loading…" in server HTML' : ''}${r.leaks.length ? ` SPOILER LEAK: ${r.leaks.map((l) => l.slice(0, 40)).join(' | ')}` : ''}]`
     console.log(`  ${icon} ${route}${detail}`)
     results.push(r)
   }
 
   const passed = results.filter((r) => r.ok).length
   const failed = results.filter((r) => !r.ok)
+
+  const byTitle = new Map<string, string[]>()
+  for (const r of results) byTitle.set(r.title, [...(byTitle.get(r.title) ?? []), r.route])
+  const dupes = [...byTitle.entries()].filter(([, routes]) => routes.length > 1)
+  if (dupes.length) {
+    console.log(`\nWARNING: ${dupes.reduce((n, [, r]) => n + r.length, 0)} routes share ${dupes.length} <title> value(s) (per-page metadata is Workstream B).`)
+  }
 
   console.log(`\n─────────────────────────────────────────`)
   console.log(`Passed: ${passed} / ${routes.length}`)

@@ -24,13 +24,14 @@ export function SpoilerToggle({ protect }: SpoilerToggleProps) {
       type="button"
       onClick={toggle}
       aria-pressed={optimistic}
+      aria-label={optimistic ? 'Spoilers Hidden' : 'Spoilers Visible'}
       disabled={isPending}
-      className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+      className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
         optimistic ? 'bg-yellow-500 text-black' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
       }`}
     >
       <span>{optimistic ? '🔒' : '👁'}</span>
-      <span>{optimistic ? 'Spoilers Hidden' : 'Spoilers Visible'}</span>
+      <span className="hidden sm:inline">{optimistic ? 'Spoilers Hidden' : 'Spoilers Visible'}</span>
     </button>
   )
 }

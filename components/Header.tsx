@@ -12,7 +12,7 @@ export async function Header() {
         <Link href="/" className="text-xl font-black tracking-tight text-white hover:text-yellow-400 transition-colors">
           Comic<span className="text-yellow-400">Atlas</span>
         </Link>
-        <nav className="flex items-center gap-4">
+        <nav className="flex items-center gap-2 sm:gap-4">
           <Link href="/events" className="text-sm text-gray-400 hover:text-white transition-colors hidden sm:block">Events</Link>
           <Link href="/teams" className="text-sm text-gray-400 hover:text-white transition-colors hidden sm:block">Teams</Link>
           <Link href="/creators" className="text-sm text-gray-400 hover:text-white transition-colors hidden md:block">Creators</Link>
@@ -28,7 +28,7 @@ export async function Header() {
               </Link>
             </div>
           ) : (
-            <Link href="/login" className="bg-yellow-400 text-black px-4 py-1.5 rounded-full text-sm font-semibold hover:bg-yellow-300 transition-colors">
+            <Link href="/login" className="bg-yellow-400 text-black whitespace-nowrap px-3 sm:px-4 py-1.5 rounded-full text-sm font-semibold hover:bg-yellow-300 transition-colors">
               Sign in
             </Link>
           )}

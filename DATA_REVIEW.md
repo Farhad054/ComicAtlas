@@ -37,3 +37,28 @@ Items flagged for manual verification before publishing. Check against Marvel/DC
 
 - [ ] No reading paths exist yet for: Black Widow (only 2 nodes via other characters), The Joker (redirects through Batman stories), Green Lantern (redirects through Flash/Blackest Night).
 - [ ] Daredevil: Born Again arc is listed as a single issue — should be noted as a 7-issue arc.
+
+## Spoiler audit (Workstream A)
+
+Flags live in `prisma/spoilers.data.ts` and are applied by `npm run db:spoilers` (also run at the end of the seed).
+
+### Unlock issues created (not in any reading path)
+Added only so gated content has an issue to unlock on. Numbers are from memory of the publication record; verify against Comic Vine before relying on them:
+Amazing Spider-Man #121 (1973) and #545 (2008); Death of Wolverine #4 (2014); Civil War #4 (2006); X-Men #101 (1976) and #137 (1980); Avengers vs. X-Men #11 (2012); Batman #428 (1988) and #497 (1993); Batman: The Killing Joke #1 (1988); Crisis on Infinite Earths #7 and #8 (1985); Green Lantern #50 (1994); Final Night #4 (1996); Green Arrow #101 (1995); Final Crisis #1 (2008).
+
+### Gated with no unlock issue (`spoilerAfterIssueId = null`)
+These stay hidden while protection is on, until the viewer turns it off. Not verified well enough to pick an issue:
+Wolverine status (resurrection); Jean Grey status; Cyclops "Krakoa"; Scarlet Witch "Children's Crusade"; Thor "Unworthy" and "Ragnarok"; Magneto adamantium; Daredevil "Born Again"; Doctor Strange "Loses the Title"; Gamora "Infinity Wars Requiem"; Green Lantern "Rebirth"; Green Arrow "Resurrection"; Supergirl "Returned"; Nightwing "Becomes Batman" and "Exposed and Hunted"; Ra's "Lazarus Pit Revival"; Zatanna "Identity Crisis Fallout"; Wonder Woman "Becomes God of War"; Catwoman "Almost Mrs. Wayne"; Harley "Leaves the Joker".
+
+### Existing facts that look wrong (not changed)
+- Nightwing "Becomes Batman" is dated 2004; Dick Grayson took the cowl in 2009.
+- Martian Manhunter "Final Crisis Sacrifice" is dated 2009; Final Crisis #1 was 2008.
+- "Tales of the Teen Titans #44" path note says "The Judas Contract begins"; the arc ran #42–44, so #44 is the conclusion. Terra's death being in #44 is also from memory.
+- Gamora "Infinity Wars Requiem" description ("collapses the universe in half") is unverified.
+
+### Content rewritten
+Bios of The Flash, Jean Grey and Scarlet Witch gave away deaths and the "No more mutants" outcome; rewritten spoiler-free. House of M and Flashpoint summaries had their endings moved into the gated `outcomeText`.
+
+### Not gated
+- `Relationship` rows have a type only, no text, so there is nothing to hide.
+- Timeline *titles* that match public comic names (e.g. "World War Hulk") are gated with their descriptions but cannot be fully hidden if the issue is listed in a path.
