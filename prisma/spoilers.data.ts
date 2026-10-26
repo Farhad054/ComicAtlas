@@ -115,6 +115,8 @@ export const PATH_NODE_SPOILERS: [string, string][] = [
   [key('Batman: The Long Halloween', '1', 1996), "Harvey Dent's tragedy"],
   [key('Wolverine: Origin', '1', 2001), 'James Howlett'],
   [key('World War Hulk', '1', 2007), 'the Hulk wins'],
+  [key('House of M', '8', 2005), 'No more mutants'],
+  [key('Flashpoint', '5', 2011), 'Barry chooses the world over his mother'],
 ]
 
 /** Event outcome text split out of the public summary. */

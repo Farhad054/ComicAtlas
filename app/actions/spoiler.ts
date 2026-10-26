@@ -1,6 +1,7 @@
 'use server'
 
 import { cookies } from 'next/headers'
+import { revalidatePath } from 'next/cache'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -31,5 +32,7 @@ export async function setIssueRead(issueId: string, read: boolean): Promise<{ ok
     update: { read },
     create: { userId, issueId, read },
   })
+  // Read progress decides which gated text is rendered, so every page must re-render.
+  revalidatePath('/', 'layout')
   return { ok: true }
 }

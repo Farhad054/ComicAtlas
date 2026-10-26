@@ -13,7 +13,7 @@ test('marvel character grid loads', async ({ page }) => {
 
 test('spider-man hub: key sections present', async ({ page }) => {
   await page.goto('/marvel/spider-man')
-  await expect(page.getByText('Peter Parker')).toBeVisible()
+  await expect(page.getByText('Peter Parker', { exact: true })).toBeVisible()
   await expect(page.getByText('Key Life Events')).toBeVisible()
   await expect(page.getByText(/came from a film/i)).toBeVisible()
 })
@@ -26,7 +26,7 @@ test('reading path loads with tiers', async ({ page }) => {
 
 test('batman hub loads', async ({ page }) => {
   await page.goto('/dc/batman')
-  await expect(page.getByText('Bruce Wayne')).toBeVisible()
+  await expect(page.getByText('Bruce Wayne', { exact: true })).toBeVisible()
   await expect(page.getByText(/came from a film/i)).toBeVisible()
 })
 
@@ -38,7 +38,7 @@ test('events page loads', async ({ page }) => {
 test('teams page loads', async ({ page }) => {
   await page.goto('/teams')
   await expect(page.getByText('X-Men')).toBeVisible()
-  await expect(page.getByText('Justice League')).toBeVisible()
+  await expect(page.getByText('Justice League', { exact: true })).toBeVisible()
 })
 
 test('x-men team hub loads', async ({ page }) => {
@@ -48,7 +48,7 @@ test('x-men team hub loads', async ({ page }) => {
 
 test('search returns character results', async ({ page }) => {
   await page.goto('/search?q=batman')
-  await expect(page.getByText('Batman')).toBeVisible()
+  await expect(page.getByText('Batman', { exact: true })).toBeVisible()
 })
 
 test('search returns alias match', async ({ page }) => {
